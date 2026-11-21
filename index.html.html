@@ -35,21 +35,21 @@ td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
 .pct{font-weight:bold;text-align:center;color:#fff;border-radius:6px;padding:4px}.pct-red{background:#e74c3c}.pct-yellow{background:#f1c40f;color:#000}.pct-green{background:#7ab648}
 .pager{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap}.pager button{background:#fff;border:1px solid #ddd;padding:9px 14px}.pager button.active{background:#2f2a6b;color:#fff}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;align-items:flex-end}
-.modal.open{display:flex}.modal-box{background:#fff;width:100%;border-radius:16px 16px 0 0;padding:16px;max-height:92vh;overflow:auto}
+.modal.open{display:flex}.modal-box{background:#fff;width:100%;border-radius:16px 16px 0 0;padding:16px;max-height:92vh;overflow:auto;position:relative}
 .field{margin-bottom:10px}.field label{display:block;font-size:12px;font-weight:bold;color:#2f2a6b;margin-bottom:4px}
 .field input,.field select{width:100%;padding:11px;border:2px solid #ddd;border-radius:8px;font-size:15px}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .qr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.qr-card{border:2px dashed #333;border-radius:8px;padding:10px;text-align:center;background:#fff}
+.qr-card{border:2px solid #ddd;border-radius:8px;padding:8px;text-align:center;background:#fff;position:relative;cursor:pointer}
+.qr-card.selected{border-color:#2f2a6b;background:#eef2ff;box-shadow:0 0 0 2px #2f2a6b}
 .qr-card img{width:90px;height:90px}.qr-card b{font-size:11px;display:block;line-height:1.2;min-height:28px}
 .qr-card span{font-size:11px;font-weight:bold;background:#2f2a6b;color:#fff;padding:2px 8px;border-radius:4px}
-/* FIXED SCANNER - ISA NA LANG CAMERA, HINDI NA BLACK */
+.qr-check{position:absolute;top:6px;left:6px;width:22px;height:22px;transform:scale(1.4);accent-color:#2f2a6b;cursor:pointer}
+.qr-topbar{position:sticky;top:-16px;background:#fff;padding:10px 0 10px;z-index:5;border-bottom:2px solid #eee;margin:-16px -16px 10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.qr-close-x{background:#ff3b30;color:#fff;width:34px;height:34px;border-radius:50%;font-size:18px;line-height:1;padding:0}
+.qr-bottombar{position:sticky;bottom:-16px;background:#fff;padding:12px 0 4px;border-top:2px solid #eee;margin:12px -16px -16px;padding:12px 16px}
 #reader{width:100%;border-radius:12px;overflow:hidden;background:#000;min-height:280px}
 #reader video{width:100%!important;height:auto!important;object-fit:cover!important;display:block!important}
-#reader__scan_region{position:relative!important}
-#reader__scan_region img{display:none}
-.scan-guide{position:relative;text-align:center;margin-top:-8px;z-index:2}
-.scan-guide span{background:#2ecc71;color:#fff;font-size:11px;font-weight:bold;padding:4px 12px;border-radius:20px}
 @media print{ body *{visibility:hidden} #printArea,#printArea *{visibility:visible} #printArea{position:absolute;left:0;top:0;width:100%;display:block!important} }
 @media(min-width:700px){.cards{grid-template-columns:repeat(4,1fr)}.modal{align-items:center;justify-content:center}.modal-box{max-width:560px;border-radius:16px}.tool-grid{grid-template-columns:repeat(4,1fr)} .qr-grid{grid-template-columns:repeat(4,1fr)} }
 </style>
@@ -87,7 +87,7 @@ td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
 <button class="btn-scan" onclick="openScan()">⚡ FAST SCAN - BEEP!</button>
 <button class="btn-danger" onclick="clearCache()">⚡ CLEAR CACHE</button>
 </div>
-<div style="font-size:11px;color:#666;text-align:center;margin-top:6px" id="backupInfo">Auto-Backup: ON • Fast Scanner: ON</div>
+<div style="font-size:11px;color:#666;text-align:center;margin-top:6px" id="backupInfo">Auto-Backup: ON • Selectable QR: ON</div>
 <input type="file" id="universalFile" accept=".xlsx,.xls,.csv,.json,.txt,.tsv" hidden>
 </div>
 <div class="row" style="margin-bottom:8px"><div class="field" style="margin:0"><label>👤 Pangalan mo</label><input id="userName" placeholder="Ex: MIGUEL"></div><div class="field" style="margin:0"><label>Sort By</label><select id="sortBy" onchange="changeSort()"><option value="name">Name A-Z</option><option value="pctAsc">Pinaka-ubos muna</option><option value="pctDesc">Pinaka-marami muna</option><option value="onHandAsc">On Hand - mababa muna</option></select></div></div>
@@ -99,8 +99,8 @@ td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
 <div id="printArea" style="display:none"></div>
 
 <div class="modal" id="modal"><div class="modal-box">
-<h3 id="modalTitle" style="margin:0 0 8px">Add New Item</h3>
-<div class="field"><label>1. PRODUCT NAME</label><input id="fName"></div>
+<div style="display:flex;justify-content:space-between;align-items:center"><h3 id="modalTitle" style="margin:0">Add New Item</h3><button onclick="closeModal()" style="background:#ff3b30;color:#fff;width:34px;height:34px;border-radius:50%">✕</button></div>
+<div class="field" style="margin-top:10px"><label>1. PRODUCT NAME</label><input id="fName"></div>
 <div class="row"><div class="field"><label>2. LOCATION</label><input id="fLoc" placeholder="Ex: WAREHOUSE"></div><div class="field"><label>3. UNIT</label><select id="fUnit"><option value="pcs">pcs</option><option value="box">box</option><option value="bag">bag / sako</option><option value="roll">roll</option><option value="length">length</option><option value="set">set</option></select></div></div>
 <div class="row"><div class="field"><label>4. OPENING</label><input id="fOpen" type="number" inputmode="numeric" value="0"></div><div class="field"><label>5. STANDARD</label><input id="fStd" type="number" inputmode="numeric" value="1000"></div></div>
 <div class="row"><div class="field"><label>6. TOTAL IN</label><input id="fIn" type="number" inputmode="numeric" value="0"></div><div class="field"><label>7. TOTAL OUT</label><input id="fOut" type="number" inputmode="numeric" value="0"></div></div>
@@ -109,19 +109,32 @@ td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
 </div></div>
 
 <div class="modal" id="historyModal"><div class="modal-box">
-<h3 style="margin:0">📋 HISTORY LOG</h3><div style="display:flex;gap:6px;margin:8px 0"><input id="histSearch" placeholder="Search history..." style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px" oninput="renderHistory()"><button onclick="clearHistory()" style="background:#ff3b30;color:#fff">Clear</button></div><div id="historyList" style="max-height:400px;overflow:auto"></div><button onclick="exportHistory()" style="width:100%;margin-top:8px;background:#217346;color:#fff">📄 EXPORT HISTORY</button><button onclick="closeHistory()" style="width:100%;margin-top:6px;background:#eee">Close</button>
+<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">📋 HISTORY LOG</h3><button onclick="closeHistory()" style="background:#ff3b30;color:#fff;width:34px;height:34px;border-radius:50%">✕</button></div><div style="display:flex;gap:6px;margin:8px 0"><input id="histSearch" placeholder="Search history..." style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px" oninput="renderHistory()"><button onclick="clearHistory()" style="background:#ff3b30;color:#fff">Clear</button></div><div id="historyList" style="max-height:400px;overflow:auto"></div><button onclick="exportHistory()" style="width:100%;margin-top:8px;background:#217346;color:#fff">📄 EXPORT HISTORY</button><button onclick="closeHistory()" style="width:100%;margin-top:6px;background:#eee">Close</button>
 </div></div>
 
-<div class="modal" id="qrModal"><div class="modal-box" style="max-width:700px">
-<h3 style="margin:0">🏷️ QR STICKERS</h3><p style="font-size:12px;color:#666">Tip: Lakihan mo pag nag-print, wag masyado maliit, at wag sa madilim para mabilis ma-scan.</p>
-<div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn-qr" onclick="printQR()" style="flex:1">🖨️ PRINT LAHAT</button><button onclick="printQR('low')" style="flex:1;background:#ff6b2c;color:#fff">🖨️ PRINT LOW LANG</button></div><div id="qrList" class="qr-grid"></div><button onclick="closeQR()" style="width:100%;margin-top:10px;background:#eee">Close</button>
+<!-- BAGONG QR MODAL - MAY SELECT + X SA TAAS, HINDI NA MAIIPIT YUNG CLOSE -->
+<div class="modal" id="qrModal" onclick="if(event.target===this) closeQR()"><div class="modal-box" style="max-width:720px">
+<div class="qr-topbar"><div><h3 style="margin:0">🏷️ QR STICKERS</h3><span id="qrCount" style="font-size:12px;color:#666">0 napili</span></div><button class="qr-close-x" onclick="closeQR()">✕</button></div>
+<p style="font-size:12px;color:#666;margin:0 0 10px">Check mo lang yung gusto mo i-print. Pindot mo yung card mismo para ma-check. Tip: Lakihan mo pag nag-print para mabilis ma-scan.</p>
+<div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap">
+<button onclick="selectAllQR(true)" style="flex:1;background:#2f2a6b;color:#fff">✅ SELECT ALL</button>
+<button onclick="selectAllQR(false)" style="flex:1;background:#eee">❌ DESELECT ALL</button>
+<button onclick="selectLowQR()" style="flex:1;background:#ff6b2c;color:#fff">🔥 LOW LANG</button>
+<input id="qrSearch" placeholder="🔍 Hanapin sticker..." oninput="renderQR()" style="flex:1;min-width:140px;padding:10px;border:2px solid #ddd;border-radius:8px">
+</div>
+<div id="qrList" class="qr-grid"></div>
+<div class="qr-bottombar">
+<div style="display:flex;gap:6px">
+<button class="btn-qr" onclick="printSelectedQR()" style="flex:2">🖨️ PRINT YUNG NAPILI (<span id="qrCount2">0</span>)</button>
+<button onclick="printQR()" style="flex:1;background:#111;color:#fff">🖨️ PRINT LAHAT</button>
+</div>
+<button onclick="closeQR()" style="width:100%;margin-top:6px;background:#eee;padding:12px">✕ CLOSE - Balik sa Inventory</button>
+</div>
 </div></div>
 
-<!-- FIXED SCAN MODAL - ISA NA LANG CAMERA -->
 <div class="modal" id="scanModal"><div class="modal-box">
-<h3 style="margin:0">⚡ FAST SCAN - BEEP!</h3><p style="font-size:12px;color:#666">Itutok mo lang mga <b>15cm - isang dangkal</b>. Pag nasa green box na, <b>BEEP agad</b>. Kung black pa din, pindot mo Close tapos buksan mo ulit at pindot mo <b>Allow</b> sa camera.</p>
+<div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">⚡ FAST SCAN - BEEP!</h3><button onclick="closeScan()" style="background:#ff3b30;color:#fff;width:34px;height:34px;border-radius:50%">✕</button></div><p style="font-size:12px;color:#666">Itutok mo lang mga <b>15cm - isang dangkal</b>. Pag nasa green box na, <b>BEEP agad</b>.</p>
 <div id="reader"></div>
-<div class="scan-guide"><span>⬆️ ITUTOK MO DITO YUNG QR ⬆️</span></div>
 <div class="field" style="margin-top:12px"><label>Or type CODE - may BEEP din</label><input id="scanInput" placeholder="Ex: ITEM-001" oninput="scanManual(this.value)"></div>
 <div id="scanResult" style="font-size:13px"></div>
 <div style="display:flex;gap:6px"><button onclick="testBeep()" style="flex:1;background:#2f2a6b;color:#fff">🔊 TEST BEEP</button><button onclick="restartScan()" style="flex:1;background:#ff9800;color:#fff">🔄 RESTART CAMERA</button></div>
@@ -130,7 +143,7 @@ td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
 
 <script>
 const PAGE_SIZE=50;
-let items=[]; let cache=[]; let filteredIdx=[]; let history=[];
+let items=[]; let cache=[]; let filteredIdx=[]; let history=[]; let selectedQR=new Set();
 let currentFilter="ALL", currentPage=1, searchQ="", sortMode="name", renderQueued=false, saveTimer=null, html5Qr=null, audioCtx=null, scanning=false;
 try{ items=JSON.parse(localStorage.getItem('inventory_data')||'[]'); history=JSON.parse(localStorage.getItem('inventory_history')||'[]'); }catch(e){ items=[]; history=[]; }
 try{ const old=JSON.parse(localStorage.getItem('malamok_inventory')||'[]'); if(items.length===0 && old.length>0){ items=old.map(o=>({name:o.name,loc:o.loc,unit:o.unit,open:o.open,in:o.in,out:o.out,std:o.std,code:o.code})); } }catch(e){}
@@ -171,7 +184,7 @@ function changeSort(){ sortMode=document.getElementById('sortBy').value; applyFi
 function sortByName(){ sortMode="name"; document.getElementById('sortBy').value="name"; applyFilter(); queueRender(); }
 function sortByPct(){ sortMode=sortMode==="pctAsc"?"pctDesc":"pctAsc"; document.getElementById('sortBy').value=sortMode; applyFilter(); queueRender(); }
 function sortByOnHand(){ sortMode="onHandAsc"; document.getElementById('sortBy').value="onHandAsc"; applyFilter(); queueRender(); }
-function del(i){ if(confirm("DELETE mo ba?\n\n"+items[i].name)){ addHistory(items[i].name,"DELETE",0,items[i].unit||'pcs'); playBeep(false); items.splice(i,1); rebuildCache(); applyFilter(); save(true); } }
+function del(i){ if(confirm("DELETE mo ba?\n\n"+items[i].name)){ addHistory(items[i].name,"DELETE",0,items[i].unit||'pcs'); playBeep(false); items.splice(i,1); selectedQR.delete(i); rebuildCache(); applyFilter(); save(true); } }
 function clearCache(){ rebuildCache(); applyFilter(); queueRender(); alert("Cache cleared!"); }
 let editIndex=-1;
 function openModal(){ editIndex=-1; document.getElementById('modalTitle').textContent="Add New Item"; document.getElementById('fName').value=""; document.getElementById('fLoc').value=""; document.getElementById('fUnit').value="pcs"; document.getElementById('fOpen').value=0; document.getElementById('fStd').value=1000; document.getElementById('fIn').value=0; document.getElementById('fOut').value=0; updatePreview(); document.getElementById('modal').classList.add('open'); }
@@ -186,49 +199,23 @@ function renderHistory(){ const q=(document.getElementById('histSearch').value||
 function clearHistory(){ if(confirm("Clear history?")){ history=[]; save(true); renderHistory(); } }
 function exportHistory(){ let csv="TIME,USER,PRODUCT,ACTION,QTY,UNIT\n"; history.forEach(h=>csv+=`"${h.time}","${h.user}","${h.name}","${h.action}",${h.qty},"${h.unit}"\n`); const b=new Blob(["\ufeff"+csv],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="HISTORY_"+new Date().toISOString().slice(0,10)+".csv"; a.click(); }
 function printReorder(){ const low=items.map((it,i)=>({it,c:cache[i]})).filter(x=>x.c.pct<100).sort((a,b)=>a.c.pct-b.c.pct); const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial;padding:20px"><h2 style="text-align:center;margin:0">REORDER LIST</h2><p style="text-align:center">Date: ${new Date().toLocaleString()} • Need: ${low.length} items • By: ${document.getElementById('userName').value||"________"}</p><table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#2f2a6b;color:#fff"><th>CODE</th><th>PRODUCT</th><th>LOCATION</th><th>ON HAND</th><th>STD</th><th>%</th><th>NEED</th><th>CHECK</th></tr>${low.map(x=>`<tr><td>${x.it.code}</td><td>${x.it.name}</td><td>${x.it.loc||""}</td><td style="text-align:center">${x.c.onHand}</td><td style="text-align:center">${x.it.std}</td><td style="text-align:center">${x.c.pct}%</td><td style="text-align:center">${Math.max(0,x.it.std-x.c.onHand)}</td><td></td></tr>`).join("")}</table></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
-
-// ===== FIXED SCANNER - ISA NA LANG, HINDI NA BLACK =====
-async function openScan(){
-document.getElementById('scanModal').classList.add('open');
-document.getElementById('scanResult').innerHTML="Binubuksan camera... pindot mo Allow pag nagtanong";
-// Linisin muna yung luma para hindi mag-black
-try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){}
-document.getElementById('reader').innerHTML="";
-const facing = document.getElementById('cameraMode').value==="front" ? "user" : "environment";
-try{
-html5Qr = new Html5Qrcode("reader");
-await html5Qr.start({facingMode:facing},{fps:30,qrbox:{width:250,height:250},aspectRatio:1.0,disableFlip:false}, txt=>handleScan(txt), ()=>{});
-document.getElementById('scanResult').innerHTML="Camera OK! Itutok mo na sa QR - 15cm lang";
-}catch(e){
-document.getElementById('scanResult').innerHTML="Ayaw mag-open camera: "+e.message+"<br>Check mo: 1) Naka-Allow ba camera sa Settings > Safari > Camera > Allow? 2) Naka-HTTPS ba yung link mo? Dapat tiiny.site, hindi file:// 3) Pindot mo RESTART CAMERA sa baba";
-}
-}
+async function openScan(){ document.getElementById('scanModal').classList.add('open'); document.getElementById('scanResult').innerHTML="Binubuksan camera... pindot mo Allow pag nagtanong"; try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){} document.getElementById('reader').innerHTML=""; const facing = document.getElementById('cameraMode').value==="front" ? "user" : "environment"; try{ html5Qr = new Html5Qrcode("reader"); await html5Qr.start({facingMode:facing},{fps:30,qrbox:{width:250,height:250},aspectRatio:1.0,disableFlip:false}, txt=>handleScan(txt), ()=>{}); document.getElementById('scanResult').innerHTML="Camera OK! Itutok mo na sa QR - 15cm lang"; }catch(e){ document.getElementById('scanResult').innerHTML="Ayaw mag-open camera: "+e.message; } }
 async function restartScan(){ await openScan(); }
-async function closeScan(){
-scanning=false;
-try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){}
-document.getElementById('reader').innerHTML="";
-document.getElementById('scanModal').classList.remove('open');
-}
-function handleScan(txt){
-const code=txt.trim().toUpperCase();
-const idx=items.findIndex(it=>(it.code||"").toUpperCase()===code || it.name.toUpperCase()===code);
-if(idx>=0){
-playBeep(true);
-document.getElementById('scanResult').innerHTML=`✅ Na-scan: <b>${items[idx].name} (${items[idx].code})</b> - On Hand: ${cache[idx].onHand}`;
-document.getElementById('search').value=items[idx].code; searchQ=items[idx].code.toLowerCase(); applyFilter(); queueRender();
-setTimeout(closeScan,700);
-} else {
-playBeep(false);
-document.getElementById('scanResult').innerHTML=`❌ Hindi mahanap: ${txt} - baka ibang QR yan, try mo ulit`;
-}
-}
+async function closeScan(){ try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){} document.getElementById('reader').innerHTML=""; document.getElementById('scanModal').classList.remove('open'); }
+function handleScan(txt){ const code=txt.trim().toUpperCase(); const idx=items.findIndex(it=>(it.code||"").toUpperCase()===code || it.name.toUpperCase()===code); if(idx>=0){ playBeep(true); document.getElementById('scanResult').innerHTML=`✅ Na-scan: <b>${items[idx].name} (${items[idx].code})</b> - On Hand: ${cache[idx].onHand}`; document.getElementById('search').value=items[idx].code; searchQ=items[idx].code.toLowerCase(); applyFilter(); queueRender(); setTimeout(closeScan,700); } else { playBeep(false); document.getElementById('scanResult').innerHTML=`❌ Hindi mahanap: ${txt}`; } }
 function scanManual(val){ if(val.length<2) return; const q=val.toLowerCase(); const idx=items.findIndex(it=>it.name.toLowerCase().includes(q)||(it.code||"").toLowerCase()===q); if(idx>=0){ playBeep(true); document.getElementById('scanResult').innerHTML=`✅ Nakita: <b>${items[idx].name} (${items[idx].code})</b> - On Hand: ${cache[idx].onHand} <button onclick="document.getElementById('search').value='${items[idx].code}';searchQ='${items[idx].code.toLowerCase()}';applyFilter();queueRender();closeScan()">Punta</button>`; } }
-function openQR(){ document.getElementById('qrModal').classList.add('open'); renderQR(); }
+
+// ===== BAGONG QR - PWEDE MAG-SELECT, MAY ALL, MAY X SA TAAS =====
+function openQR(){ document.getElementById('qrModal').classList.add('open'); document.getElementById('qrSearch').value=""; renderQR(); }
 function closeQR(){ document.getElementById('qrModal').classList.remove('open'); }
 function qrUrl(code){ return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`; }
-function renderQR(){ const list=document.getElementById('qrList'); list.innerHTML=items.map(it=>`<div class="qr-card"><img src="${qrUrl(it.code)}"><b>${it.name}</b><span>${it.code}</span><div style="font-size:10px;color:#666">${it.loc||""} • ${it.unit}</div></div>`).join(""); }
-function printQR(mode){ const arr=mode==='low'?items.filter((it,i)=>cache[i].pct<100):items; const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial"><h2 style="text-align:center">QR STICKERS - ${arr.length} items</h2><p style="text-align:center;font-size:12px">Gupitin at idikit.</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${arr.map(it=>`<div style="border:2px dashed #333;border-radius:8px;padding:10px;text-align:center"><img src="${qrUrl(it.code)}" style="width:110px;height:110px"><div style="font-weight:bold;font-size:12px">${it.name}</div><div style="background:#2f2a6b;color:#fff;display:inline-block;padding:2px 8px;border-radius:4px;font-weight:bold">${it.code}</div></div>`).join("")}</div></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
+function updateQRCount(){ document.getElementById('qrCount').textContent=selectedQR.size+" napili - "+(selectedQR.size===0?"wala pa, check ka muna":"pwede na i-print"); document.getElementById('qrCount2').textContent=selectedQR.size; }
+function toggleQR(idx, event){ if(event) event.stopPropagation(); if(selectedQR.has(idx)) selectedQR.delete(idx); else selectedQR.add(idx); renderQR(); }
+function selectAllQR(on){ const q=(document.getElementById('qrSearch').value||"").toLowerCase(); if(on){ items.forEach((it,i)=>{ if(!q||it.name.toLowerCase().includes(q)||(it.code||"").toLowerCase().includes(q)) selectedQR.add(i); }); } else { if(!q) selectedQR.clear(); else { items.forEach((it,i)=>{ if(it.name.toLowerCase().includes(q)||(it.code||"").toLowerCase().includes(q)) selectedQR.delete(i); }); } } renderQR(); }
+function selectLowQR(){ selectedQR.clear(); items.forEach((it,i)=>{ if(cache[i].pct<100) selectedQR.add(i); }); renderQR(); }
+function renderQR(){ const q=(document.getElementById('qrSearch').value||"").toLowerCase(); const list=document.getElementById('qrList'); let html=""; items.forEach((it,i)=>{ if(q && !it.name.toLowerCase().includes(q) && !(it.code||"").toLowerCase().includes(q)) return; const sel=selectedQR.has(i); html+=`<div class="qr-card ${sel?"selected":""}" onclick="toggleQR(${i},event)"><input type="checkbox" class="qr-check" ${sel?"checked":""} onclick="toggleQR(${i},event)"><img src="${qrUrl(it.code)}"><b>${it.name}</b><span>${it.code}</span><div style="font-size:10px;color:#666">${it.loc||""} • ${it.unit} • ${cache[i].onHand} pcs</div></div>`; }); list.innerHTML=html||"<p style='grid-column:1/-1;text-align:center;color:#888'>Walang nahanap. Try ibang search.</p>"; updateQRCount(); }
+function printQR(mode){ const arr=mode==='low'?items.filter((it,i)=>cache[i].pct<100):items; const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial"><h2 style="text-align:center">QR STICKERS - ${arr.length} items</h2><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${arr.map(it=>`<div style="border:2px dashed #333;border-radius:8px;padding:10px;text-align:center"><img src="${qrUrl(it.code)}" style="width:110px;height:110px"><div style="font-weight:bold;font-size:12px">${it.name}</div><div style="background:#2f2a6b;color:#fff;display:inline-block;padding:2px 8px;border-radius:4px;font-weight:bold">${it.code}</div></div>`).join("")}</div></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
+function printSelectedQR(){ if(selectedQR.size===0) return alert("Wala ka pang napili! Check mo muna yung mga gusto mo i-print. Pindot mo yung card o yung checkbox."); const arr=[...selectedQR].map(i=>items[i]); const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial"><h2 style="text-align:center">QR STICKERS - ${arr.length} napili</h2><p style="text-align:center;font-size:12px">Gupitin at idikit.</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${arr.map(it=>`<div style="border:2px dashed #333;border-radius:8px;padding:10px;text-align:center"><img src="${qrUrl(it.code)}" style="width:110px;height:110px"><div style="font-weight:bold;font-size:12px">${it.name}</div><div style="background:#2f2a6b;color:#fff;display:inline-block;padding:2px 8px;border-radius:4px;font-weight:bold">${it.code}</div></div>`).join("")}</div></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
 function exportExcel(){ const data=[["CODE","PRODUCT NAME","LOCATION","UNIT","OPENING","TOTAL IN","TOTAL OUT","ON HAND","LEVEL","STANDARD","%"]]; for(let i=0;i<items.length;i++){ const c=cache[i]; data.push([items[i].code,items[i].name,items[i].loc||"",items[i].unit||'pcs',items[i].open,items[i].in,items[i].out,c.onHand,c.status,items[i].std,c.pct+"%"]); } const ws=XLSX.utils.aoa_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"INVENTORY"); XLSX.writeFile(wb,"INVENTORY_"+new Date().toISOString().slice(0,10)+".xlsx"); }
 function downloadBackup(){ const blob=new Blob([JSON.stringify({date:new Date().toLocaleString(),items,history},null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="BACKUP_INVENTORY_"+new Date().toISOString().slice(0,10)+".json"; a.click(); alert("Backup na-download!"); }
 document.getElementById('universalFile').addEventListener('change',function(){ const file=this.files[0]; if(!file) return; const fn=file.name.toLowerCase(); if(fn.endsWith('.json')){ const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); const arr=d.items||d; if(confirm(`Nakita ${arr.length} items. OK=DAGDAG`)) items=[...items,...arr]; else items=arr; if(d.history) history=d.history; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){} }; r.readAsText(file); } else { const r=new FileReader(); r.onload=e=>{ try{ const wb=XLSX.read(e.target.result,{type:'array'}); const sh=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(sh,{header:1,defval:""}); let ni=[]; let start=0; for(let i=0;i<Math.min(3,json.length);i++){ if(String(json[i]).toLowerCase().includes("product")){start=i+1;break;} } for(let i=start;i<json.length;i++){ const row=json[i]; const name=String(row[1]||row[0]||"").trim(); if(!name||name.toLowerCase().includes("product")) continue; ni.push({name,loc:String(row[2]||""),unit:String(row[3]||"pcs"),open:parseInt(row[4])||0,in:parseInt(row[5])||0,out:parseInt(row[6])||0,std:parseInt(row[9])||1000}); } if(confirm(`Nakita ${ni.length} items. OK=DAGDAG`)) items=[...items,...ni]; else items=ni; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){} }; r.readAsArrayBuffer(file); } this.value=""; });
