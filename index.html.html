@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INVENTORY STOCK LIST</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;font-family:Calibri,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#e9e9e9;padding:8px}
+.header{background:#2f2a6b;color:#fff;padding:14px;border-radius:10px;text-align:center}
+.header h1{margin:0;font-size:22px}.header p{margin:4px 0 0;font-size:12px;opacity:.85;letter-spacing:1px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.card{padding:10px;border-radius:10px;color:#fff;text-align:center;cursor:pointer}.card b{font-size:20px;display:block}.card span{font-size:11px}
+.blue{background:#3b3fd1}.orange{background:#ff6b2c}.green{background:#4a9e4a}.lightgreen{background:#2ecc71}
+.search-wrap{background:#fff;padding:10px;border-radius:12px;margin-bottom:8px;position:sticky;top:8px;z-index:10}
+.search-box{display:flex;gap:6px;align-items:center;background:#f1f1f5;border:2px solid #2f2a6b;border-radius:10px;padding:4px 4px 4px 12px}
+.search-box input{flex:1;border:0;outline:0;background:transparent;font-size:16px;padding:10px 0}
+.search-box button{background:#2f2a6b;color:#fff;border:0;border-radius:8px;padding:10px 14px;font-weight:bold}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{border:1px solid #ddd;background:#fff;padding:7px 12px;border-radius:20px;font-size:12px;font-weight:bold;cursor:pointer}
+.chip.active{background:#2f2a6b;color:#fff}
+.toolbox{background:#fff;border-radius:12px;padding:10px;margin-bottom:8px}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tool-grid button{padding:11px;font-size:12px}
+button{border:0;border-radius:8px;padding:10px 12px;font-weight:bold;cursor:pointer;touch-action:manipulation}
+.btn-add{background:#2f2a6b;color:#fff;width:100%;font-size:15px}.btn-excel{background:#217346;color:#fff}.btn-backup{background:#ff9800;color:#fff}.btn-danger{background:#ff3b30;color:#fff}.btn-print{background:#111;color:#fff}.btn-history{background:#00838f;color:#fff}.btn-scan{background:#6a1b9a;color:#fff}.btn-qr{background:#e65100;color:#fff}
+.btn-in{background:#2ecc71;color:#fff}.btn-out{background:#ff6b2c;color:#fff}.btn-del{background:#ff3b30;color:#fff;font-size:11px}.btn-edit{background:#ffc107;color:#000;font-size:11px}
+.table-wrap{background:#fff;border-radius:10px;overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th{background:#3d3575;color:#fff;padding:9px;font-size:11px;text-align:left;white-space:nowrap;cursor:pointer}
+td{padding:7px;border-bottom:1px solid #eee;font-size:13px}
+.status{font-weight:bold;text-align:center;border-radius:6px;padding:5px;font-size:12px;white-space:nowrap}
+.below{background:#ffeb3b}.low{background:#ff6b2c;color:#fff}.above{background:#2ecc71;color:#fff}
+.pct{font-weight:bold;text-align:center;color:#fff;border-radius:6px;padding:4px}.pct-red{background:#e74c3c}.pct-yellow{background:#f1c40f;color:#000}.pct-green{background:#7ab648}
+.pager{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap}.pager button{background:#fff;border:1px solid #ddd;padding:9px 14px}.pager button.active{background:#2f2a6b;color:#fff}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;align-items:flex-end}
+.modal.open{display:flex}.modal-box{background:#fff;width:100%;border-radius:16px 16px 0 0;padding:16px;max-height:92vh;overflow:auto}
+.field{margin-bottom:10px}.field label{display:block;font-size:12px;font-weight:bold;color:#2f2a6b;margin-bottom:4px}
+.field input,.field select{width:100%;padding:11px;border:2px solid #ddd;border-radius:8px;font-size:15px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.qr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qr-card{border:2px dashed #333;border-radius:8px;padding:10px;text-align:center;background:#fff}
+.qr-card img{width:90px;height:90px}.qr-card b{font-size:11px;display:block;line-height:1.2;min-height:28px}
+.qr-card span{font-size:11px;font-weight:bold;background:#2f2a6b;color:#fff;padding:2px 8px;border-radius:4px}
+/* FIXED SCANNER - ISA NA LANG CAMERA, HINDI NA BLACK */
+#reader{width:100%;border-radius:12px;overflow:hidden;background:#000;min-height:280px}
+#reader video{width:100%!important;height:auto!important;object-fit:cover!important;display:block!important}
+#reader__scan_region{position:relative!important}
+#reader__scan_region img{display:none}
+.scan-guide{position:relative;text-align:center;margin-top:-8px;z-index:2}
+.scan-guide span{background:#2ecc71;color:#fff;font-size:11px;font-weight:bold;padding:4px 12px;border-radius:20px}
+@media print{ body *{visibility:hidden} #printArea,#printArea *{visibility:visible} #printArea{position:absolute;left:0;top:0;width:100%;display:block!important} }
+@media(min-width:700px){.cards{grid-template-columns:repeat(4,1fr)}.modal{align-items:center;justify-content:center}.modal-box{max-width:560px;border-radius:16px}.tool-grid{grid-template-columns:repeat(4,1fr)} .qr-grid{grid-template-columns:repeat(4,1fr)} }
+</style>
+</head>
+<body>
+<div class="header"><h1>SUMMARY OF INVENTORY</h1><p>INVENTORY STOCK LIST</p></div>
+<div class="cards">
+<div class="card blue" onclick="showAll()"><b id="totalItems">0</b><span>TOTAL ITEMS</span></div>
+<div class="card orange" onclick="filterLow()"><b id="lowStock">0</b><span>LOW OF STOCK</span></div>
+<div class="card green" onclick="filterNeed()"><b id="needOrder">0</b><span>NEED TO REORDER</span></div>
+<div class="card lightgreen"><b id="okLevel">0</b><span>OK / ABOVE LEVEL</span></div>
+</div>
+<div class="search-wrap">
+<div class="search-box"><span>🔍</span><input id="search" placeholder="Search... ex: ADAPTER, ITEM-001" autocomplete="off"><button onclick="clearSearch()">X</button></div>
+<div class="chips">
+<div class="chip active" data-filter="ALL" onclick="setFilter(this)">ALL</div>
+<div class="chip" data-filter="LOW OF STOCK" onclick="setFilter(this)">LOW</div>
+<div class="chip" data-filter="BELOW LEVEL" onclick="setFilter(this)">BELOW</div>
+<div class="chip" data-filter="ABOVE LEVEL" onclick="setFilter(this)">ABOVE</div>
+<div class="chip" style="background:#fff3e0" onclick="openQR()">🏷️ PRINT QR</div>
+<div class="chip" style="background:#f3e5f5" onclick="openScan()">⚡ FAST SCAN - BEEP!</div>
+<div class="chip" style="background:#e0f2f1" onclick="openHistory()">📋 HISTORY</div>
+</div>
+<div style="font-size:12px;color:#666;margin-top:6px;display:flex;justify-content:space-between"><span id="resultCount"></span><span id="renderTime"></span></div>
+</div>
+<div class="toolbox">
+<h3 style="margin:0 0 8px;font-size:13px">📦 EXPORT • BACKUP • PRINT • QR • FAST SCAN</h3>
+<div class="tool-grid">
+<button class="btn-excel" onclick="exportExcel()">📊 EXPORT .xlsx</button>
+<button class="btn-excel" onclick="document.getElementById('universalFile').click()">📥 IMPORT LAHAT</button>
+<button class="btn-backup" onclick="downloadBackup()">💾 BACKUP</button>
+<button class="btn-qr" onclick="openQR()">🏷️ PRINT QR STICKERS</button>
+<button class="btn-print" onclick="printReorder()">🖨️ PRINT REORDER</button>
+<button class="btn-history" onclick="openHistory()">📋 HISTORY LOG</button>
+<button class="btn-scan" onclick="openScan()">⚡ FAST SCAN - BEEP!</button>
+<button class="btn-danger" onclick="clearCache()">⚡ CLEAR CACHE</button>
+</div>
+<div style="font-size:11px;color:#666;text-align:center;margin-top:6px" id="backupInfo">Auto-Backup: ON • Fast Scanner: ON</div>
+<input type="file" id="universalFile" accept=".xlsx,.xls,.csv,.json,.txt,.tsv" hidden>
+</div>
+<div class="row" style="margin-bottom:8px"><div class="field" style="margin:0"><label>👤 Pangalan mo</label><input id="userName" placeholder="Ex: MIGUEL"></div><div class="field" style="margin:0"><label>Sort By</label><select id="sortBy" onchange="changeSort()"><option value="name">Name A-Z</option><option value="pctAsc">Pinaka-ubos muna</option><option value="pctDesc">Pinaka-marami muna</option><option value="onHandAsc">On Hand - mababa muna</option></select></div></div>
+<div class="row" style="margin-bottom:8px"><div class="field" style="margin:0"><label>🔊 Tunog</label><select id="soundToggle" onchange="localStorage.setItem('inventory_sound',this.value)"><option value="on">ON - May BEEP</option><option value="off">OFF</option></select></div><div class="field" style="margin:0"><label>📷 Camera</label><select id="cameraMode"><option value="back">Back Camera - pang-scan</option><option value="front">Front Camera</option></select></div></div>
+<button class="btn-add" onclick="openModal()">+ ADD NEW ITEM</button>
+<div style="font-size:11px;color:#666;text-align:center;margin:6px" id="perfInfo"></div>
+<div class="table-wrap"><table><thead><tr><th>CODE</th><th onclick="sortByName()">PRODUCT NAME ↕</th><th>LOCATION</th><th>UNIT</th><th>OPENING</th><th>IN</th><th>OUT</th><th onclick="sortByOnHand()">ON HAND ↕</th><th>LEVEL</th><th>STD</th><th onclick="sortByPct()">% ↕</th><th>ACTION</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<div class="pager" id="pager"></div>
+<div id="printArea" style="display:none"></div>
+
+<div class="modal" id="modal"><div class="modal-box">
+<h3 id="modalTitle" style="margin:0 0 8px">Add New Item</h3>
+<div class="field"><label>1. PRODUCT NAME</label><input id="fName"></div>
+<div class="row"><div class="field"><label>2. LOCATION</label><input id="fLoc" placeholder="Ex: WAREHOUSE"></div><div class="field"><label>3. UNIT</label><select id="fUnit"><option value="pcs">pcs</option><option value="box">box</option><option value="bag">bag / sako</option><option value="roll">roll</option><option value="length">length</option><option value="set">set</option></select></div></div>
+<div class="row"><div class="field"><label>4. OPENING</label><input id="fOpen" type="number" inputmode="numeric" value="0"></div><div class="field"><label>5. STANDARD</label><input id="fStd" type="number" inputmode="numeric" value="1000"></div></div>
+<div class="row"><div class="field"><label>6. TOTAL IN</label><input id="fIn" type="number" inputmode="numeric" value="0"></div><div class="field"><label>7. TOTAL OUT</label><input id="fOut" type="number" inputmode="numeric" value="0"></div></div>
+<div style="background:#eef2ff;padding:10px;border-radius:8px;margin-bottom:10px"><b id="preview">STOCK ON HAND = 0 pcs</b></div>
+<button class="btn-add" onclick="saveItem()">💾 SAVE ITEM</button><button onclick="closeModal()" style="width:100%;margin-top:6px;background:#eee">Cancel</button>
+</div></div>
+
+<div class="modal" id="historyModal"><div class="modal-box">
+<h3 style="margin:0">📋 HISTORY LOG</h3><div style="display:flex;gap:6px;margin:8px 0"><input id="histSearch" placeholder="Search history..." style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px" oninput="renderHistory()"><button onclick="clearHistory()" style="background:#ff3b30;color:#fff">Clear</button></div><div id="historyList" style="max-height:400px;overflow:auto"></div><button onclick="exportHistory()" style="width:100%;margin-top:8px;background:#217346;color:#fff">📄 EXPORT HISTORY</button><button onclick="closeHistory()" style="width:100%;margin-top:6px;background:#eee">Close</button>
+</div></div>
+
+<div class="modal" id="qrModal"><div class="modal-box" style="max-width:700px">
+<h3 style="margin:0">🏷️ QR STICKERS</h3><p style="font-size:12px;color:#666">Tip: Lakihan mo pag nag-print, wag masyado maliit, at wag sa madilim para mabilis ma-scan.</p>
+<div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn-qr" onclick="printQR()" style="flex:1">🖨️ PRINT LAHAT</button><button onclick="printQR('low')" style="flex:1;background:#ff6b2c;color:#fff">🖨️ PRINT LOW LANG</button></div><div id="qrList" class="qr-grid"></div><button onclick="closeQR()" style="width:100%;margin-top:10px;background:#eee">Close</button>
+</div></div>
+
+<!-- FIXED SCAN MODAL - ISA NA LANG CAMERA -->
+<div class="modal" id="scanModal"><div class="modal-box">
+<h3 style="margin:0">⚡ FAST SCAN - BEEP!</h3><p style="font-size:12px;color:#666">Itutok mo lang mga <b>15cm - isang dangkal</b>. Pag nasa green box na, <b>BEEP agad</b>. Kung black pa din, pindot mo Close tapos buksan mo ulit at pindot mo <b>Allow</b> sa camera.</p>
+<div id="reader"></div>
+<div class="scan-guide"><span>⬆️ ITUTOK MO DITO YUNG QR ⬆️</span></div>
+<div class="field" style="margin-top:12px"><label>Or type CODE - may BEEP din</label><input id="scanInput" placeholder="Ex: ITEM-001" oninput="scanManual(this.value)"></div>
+<div id="scanResult" style="font-size:13px"></div>
+<div style="display:flex;gap:6px"><button onclick="testBeep()" style="flex:1;background:#2f2a6b;color:#fff">🔊 TEST BEEP</button><button onclick="restartScan()" style="flex:1;background:#ff9800;color:#fff">🔄 RESTART CAMERA</button></div>
+<button onclick="closeScan()" style="width:100%;margin-top:8px;background:#eee">Close Camera</button>
+</div></div>
+
+<script>
+const PAGE_SIZE=50;
+let items=[]; let cache=[]; let filteredIdx=[]; let history=[];
+let currentFilter="ALL", currentPage=1, searchQ="", sortMode="name", renderQueued=false, saveTimer=null, html5Qr=null, audioCtx=null, scanning=false;
+try{ items=JSON.parse(localStorage.getItem('inventory_data')||'[]'); history=JSON.parse(localStorage.getItem('inventory_history')||'[]'); }catch(e){ items=[]; history=[]; }
+try{ const old=JSON.parse(localStorage.getItem('malamok_inventory')||'[]'); if(items.length===0 && old.length>0){ items=old.map(o=>({name:o.name,loc:o.loc,unit:o.unit,open:o.open,in:o.in,out:o.out,std:o.std,code:o.code})); } }catch(e){}
+if(items.length===0){ items=[{name:'NUT 4" BACK',loc:'',unit:'pcs',open:313,in:0,out:0,std:1000},{name:'MALE ADAPTER 75mm LC',loc:'',unit:'pcs',open:535,in:0,out:0,std:1000},{name:'FEMALE ADAPTER 25mm LC',loc:'',unit:'pcs',open:600,in:0,out:0,std:1000}]; }
+function ensureCodes(){ items.forEach((it,i)=>{ if(!it.code || it.code.startsWith('MAL-')) it.code="ITEM-"+String(i+1).padStart(3,'0'); if(it.loc==="MALAMOK") it.loc=""; }); }
+ensureCodes();
+document.getElementById('userName').value=localStorage.getItem('inventory_user')||"";
+document.getElementById('userName').addEventListener('change',e=>localStorage.setItem('inventory_user',e.target.value));
+document.getElementById('soundToggle').value=localStorage.getItem('inventory_sound')||"on";
+function playBeep(success){
+if((localStorage.getItem('inventory_sound')||"on")==="off" && success) return;
+try{
+if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==="suspended") audioCtx.resume();
+const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+osc.connect(gain); gain.connect(audioCtx.destination);
+if(success){ osc.frequency.value=1200; osc.type='square'; gain.gain.value=0.25; osc.start(); osc.stop(audioCtx.currentTime+0.12); if(navigator.vibrate) navigator.vibrate(60); }
+else{ osc.frequency.value=300; osc.type='square'; gain.gain.value=0.25; osc.start(); osc.stop(audioCtx.currentTime+0.25); if(navigator.vibrate) navigator.vibrate([80,40,80]); }
+}catch(e){}
+}
+function testBeep(){ playBeep(true); document.getElementById('scanResult').innerHTML="Narining mo? Kung wala, taasan mo volume, wag naka-silent."; }
+function rebuildCache(){ cache=items.map(it=>{ const onHand=it.open+it.in-it.out; const pct=it.std?Math.round(onHand/it.std*100):0; const status=pct<=0?"LOW OF STOCK":pct<100?"BELOW LEVEL":"ABOVE LEVEL"; return {onHand,pct,status,nameLower:it.name.toLowerCase(),locLower:(it.loc||"").toLowerCase(),codeLower:(it.code||"").toLowerCase()}; }); }
+rebuildCache();
+function updateSummary(){ let low=0,need=0,ok=0; for(let c of cache){ if(c.status==="LOW OF STOCK")low++; if(c.pct<100)need++; if(c.status==="ABOVE LEVEL")ok++; } document.getElementById('totalItems').textContent=items.length; document.getElementById('lowStock').textContent=low; document.getElementById('needOrder').textContent=need; document.getElementById('okLevel').textContent=ok; }
+function applyFilter(){ filteredIdx=[]; for(let i=0;i<items.length;i++){ const c=cache[i]; if(currentFilter!=="ALL"&&c.status!==currentFilter) continue; if(searchQ&&!c.nameLower.includes(searchQ)&&!c.locLower.includes(searchQ)&&!c.codeLower.includes(searchQ)) continue; filteredIdx.push(i); } if(sortMode==="name") filteredIdx.sort((a,b)=>items[a].name.localeCompare(items[b].name)); if(sortMode==="pctAsc") filteredIdx.sort((a,b)=>cache[a].pct-cache[b].pct); if(sortMode==="pctDesc") filteredIdx.sort((a,b)=>cache[b].pct-cache[a].pct); if(sortMode==="onHandAsc") filteredIdx.sort((a,b)=>cache[a].onHand-cache[b].onHand); currentPage=1; }
+function save(quick){ if(saveTimer) clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem('inventory_data',JSON.stringify(items)); localStorage.setItem('inventory_history',JSON.stringify(history.slice(-500))); }catch(e){} document.getElementById('backupInfo').textContent="Saved: "+new Date().toLocaleTimeString(); },quick?0:300); queueRender(); }
+function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{renderQueued=false; render();}); }
+function addHistory(name,action,qty,unit){ history.unshift({time:new Date().toLocaleString(),user:document.getElementById('userName').value||"Unknown",name,action,qty,unit}); if(history.length>1000) history=history.slice(0,1000); }
+function render(){ const t0=performance.now(); updateSummary(); const totalPages=Math.max(1,Math.ceil(filteredIdx.length/PAGE_SIZE)); if(currentPage>totalPages) currentPage=totalPages; const start=(currentPage-1)*PAGE_SIZE; const end=Math.min(start+PAGE_SIZE,filteredIdx.length); const tb=document.getElementById('tbody'); const frag=document.createDocumentFragment(); for(let k=start;k<end;k++){ const idx=filteredIdx[k]; const it=items[idx]; const c=cache[idx]; const tr=document.createElement('tr'); const pctClass=c.pct<=30?"pct-red":c.pct<100?"pct-yellow":"pct-green"; const stClass=c.status==="LOW OF STOCK"?"low":c.status==="BELOW LEVEL"?"below":"above"; tr.innerHTML=`<td><b>${it.code}</b></td><td><b>${it.name}</b></td><td>${it.loc||"-"}</td><td style="text-align:center">${it.unit||'pcs'}</td><td style="text-align:center">${it.open}</td><td style="text-align:center">${it.in}</td><td style="text-align:center">${it.out}</td><td style="text-align:center"><b>${c.onHand}</b></td><td><div class="status ${stClass}">${c.status}</div></td><td style="text-align:center">${it.std}</td><td><div class="pct ${pctClass}">${c.pct}%</div></td><td><div class="row"><button class="btn-in" data-act="in" data-idx="${idx}">+IN</button><button class="btn-out" data-act="out" data-idx="${idx}">-OUT</button></div><div class="row" style="margin-top:4px"><button class="btn-edit" data-act="edit" data-idx="${idx}">EDIT</button><button class="btn-del" data-act="del" data-idx="${idx}">DELETE</button></div></td>`; frag.appendChild(tr); } tb.textContent=""; tb.appendChild(frag); document.getElementById('resultCount').textContent=`Showing ${filteredIdx.length===0?0:start+1}-${end} of ${filteredIdx.length} (Page ${currentPage}/${totalPages})`; document.getElementById('renderTime').textContent=`⚡ ${(performance.now()-t0).toFixed(1)}ms`; document.getElementById('perfInfo').textContent=`Total: ${items.length} items • 50 per page`; const pager=document.getElementById('pager'); pager.innerHTML=""; if(totalPages>1){ const mk=(l,p,d,a)=>{ const b=document.createElement('button'); b.textContent=l; b.disabled=!!d; if(a) b.className='active'; b.onclick=()=>{currentPage=p; queueRender();}; pager.appendChild(b); }; mk("◀ Prev",Math.max(1,currentPage-1),currentPage===1); let s=Math.max(1,currentPage-2),e=Math.min(totalPages,s+4); for(let p=s;p<=e;p++) mk(String(p),p,false,p===currentPage); mk("Next ▶",Math.min(totalPages,currentPage+1),currentPage===totalPages); } }
+document.getElementById('tbody').addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn) return; const idx=parseInt(btn.dataset.idx); const act=btn.dataset.act; if(act==="in"||act==="out"){ const qty=parseInt(prompt(act==="in"?`Ilan IN? - ${items[idx].name}`:`Ilan OUT? - ${items[idx].name}`,"1")); if(!qty) return; if(act==="in") items[idx].in+=qty; else items[idx].out+=qty; addHistory(items[idx].name,act==="in"?"IN":"OUT",qty,items[idx].unit||'pcs'); playBeep(true); const it=items[idx]; const onHand=it.open+it.in-it.out; const pct=it.std?Math.round(onHand/it.std*100):0; cache[idx]={onHand,pct,status:pct<=0?"LOW OF STOCK":pct<100?"BELOW LEVEL":"ABOVE LEVEL",nameLower:it.name.toLowerCase(),locLower:(it.loc||"").toLowerCase(),codeLower:(it.code||"").toLowerCase()}; save(true); } else if(act==="edit") editItem(idx); else if(act==="del") del(idx); });
+let searchTimer=null; document.getElementById('search').addEventListener('input',e=>{ if(searchTimer) clearTimeout(searchTimer); searchTimer=setTimeout(()=>{ searchQ=e.target.value.trim().toLowerCase(); applyFilter(); queueRender(); },150); });
+function setFilter(el){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); currentFilter=el.dataset.filter; applyFilter(); queueRender(); }
+function showAll(){ currentFilter="ALL"; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter==="ALL")); applyFilter(); queueRender(); }
+function filterLow(){ currentFilter="LOW OF STOCK"; applyFilter(); queueRender(); }
+function filterNeed(){ currentFilter="BELOW LEVEL"; applyFilter(); queueRender(); }
+function clearSearch(){ document.getElementById('search').value=""; searchQ=""; applyFilter(); queueRender(); }
+function changeSort(){ sortMode=document.getElementById('sortBy').value; applyFilter(); queueRender(); }
+function sortByName(){ sortMode="name"; document.getElementById('sortBy').value="name"; applyFilter(); queueRender(); }
+function sortByPct(){ sortMode=sortMode==="pctAsc"?"pctDesc":"pctAsc"; document.getElementById('sortBy').value=sortMode; applyFilter(); queueRender(); }
+function sortByOnHand(){ sortMode="onHandAsc"; document.getElementById('sortBy').value="onHandAsc"; applyFilter(); queueRender(); }
+function del(i){ if(confirm("DELETE mo ba?\n\n"+items[i].name)){ addHistory(items[i].name,"DELETE",0,items[i].unit||'pcs'); playBeep(false); items.splice(i,1); rebuildCache(); applyFilter(); save(true); } }
+function clearCache(){ rebuildCache(); applyFilter(); queueRender(); alert("Cache cleared!"); }
+let editIndex=-1;
+function openModal(){ editIndex=-1; document.getElementById('modalTitle').textContent="Add New Item"; document.getElementById('fName').value=""; document.getElementById('fLoc').value=""; document.getElementById('fUnit').value="pcs"; document.getElementById('fOpen').value=0; document.getElementById('fStd').value=1000; document.getElementById('fIn').value=0; document.getElementById('fOut').value=0; updatePreview(); document.getElementById('modal').classList.add('open'); }
+function editItem(i){ editIndex=i; const it=items[i]; document.getElementById('modalTitle').textContent="EDIT - "+it.name; document.getElementById('fName').value=it.name; document.getElementById('fLoc').value=it.loc||""; document.getElementById('fUnit').value=it.unit||'pcs'; document.getElementById('fOpen').value=it.open; document.getElementById('fStd').value=it.std; document.getElementById('fIn').value=it.in; document.getElementById('fOut').value=it.out; updatePreview(); document.getElementById('modal').classList.add('open'); }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function updatePreview(){ const o=parseInt(document.getElementById('fOpen').value)||0; const ii=parseInt(document.getElementById('fIn').value)||0; const ou=parseInt(document.getElementById('fOut').value)||0; document.getElementById('preview').textContent=`STOCK ON HAND = ${o+ii-ou} ${document.getElementById('fUnit').value}`; }
+['fOpen','fIn','fOut','fUnit'].forEach(id=>document.getElementById(id).addEventListener('input',updatePreview));
+function saveItem(){ const name=document.getElementById('fName').value.trim(); if(!name) return alert("Lagyan mo ng Product Name"); const data={code: editIndex>=0?items[editIndex].code:"ITEM-"+String(items.length+1).padStart(3,'0'), name, loc:document.getElementById('fLoc').value||"", unit:document.getElementById('fUnit').value, open:parseInt(document.getElementById('fOpen').value)||0, in:parseInt(document.getElementById('fIn').value)||0, out:parseInt(document.getElementById('fOut').value)||0, std:parseInt(document.getElementById('fStd').value)||1000}; if(editIndex>=0){ addHistory(name,"EDIT",0,data.unit); items[editIndex]=data; } else { addHistory(name,"ADD",data.open,data.unit); items.push(data); } playBeep(true); ensureCodes(); rebuildCache(); applyFilter(); save(true); closeModal(); }
+function openHistory(){ document.getElementById('historyModal').classList.add('open'); renderHistory(); }
+function closeHistory(){ document.getElementById('historyModal').classList.remove('open'); }
+function renderHistory(){ const q=(document.getElementById('histSearch').value||"").toLowerCase(); const list=document.getElementById('historyList'); const f=history.filter(h=>!q||h.name.toLowerCase().includes(q)||h.user.toLowerCase().includes(q)); list.innerHTML=f.length?f.slice(0,100).map(h=>`<div style="border-bottom:1px solid #eee;padding:8px 0;display:flex;justify-content:space-between"><div><b>${h.name}</b><br><small>${h.time} • ${h.user}</small></div><b style="color:${h.action==="IN"?"green":"red"}">${h.action} ${h.qty} ${h.unit}</b></div>`).join(""):"<p style='text-align:center;color:#888'>Walang history pa.</p>"; }
+function clearHistory(){ if(confirm("Clear history?")){ history=[]; save(true); renderHistory(); } }
+function exportHistory(){ let csv="TIME,USER,PRODUCT,ACTION,QTY,UNIT\n"; history.forEach(h=>csv+=`"${h.time}","${h.user}","${h.name}","${h.action}",${h.qty},"${h.unit}"\n`); const b=new Blob(["\ufeff"+csv],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download="HISTORY_"+new Date().toISOString().slice(0,10)+".csv"; a.click(); }
+function printReorder(){ const low=items.map((it,i)=>({it,c:cache[i]})).filter(x=>x.c.pct<100).sort((a,b)=>a.c.pct-b.c.pct); const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial;padding:20px"><h2 style="text-align:center;margin:0">REORDER LIST</h2><p style="text-align:center">Date: ${new Date().toLocaleString()} • Need: ${low.length} items • By: ${document.getElementById('userName').value||"________"}</p><table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#2f2a6b;color:#fff"><th>CODE</th><th>PRODUCT</th><th>LOCATION</th><th>ON HAND</th><th>STD</th><th>%</th><th>NEED</th><th>CHECK</th></tr>${low.map(x=>`<tr><td>${x.it.code}</td><td>${x.it.name}</td><td>${x.it.loc||""}</td><td style="text-align:center">${x.c.onHand}</td><td style="text-align:center">${x.it.std}</td><td style="text-align:center">${x.c.pct}%</td><td style="text-align:center">${Math.max(0,x.it.std-x.c.onHand)}</td><td></td></tr>`).join("")}</table></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
+
+// ===== FIXED SCANNER - ISA NA LANG, HINDI NA BLACK =====
+async function openScan(){
+document.getElementById('scanModal').classList.add('open');
+document.getElementById('scanResult').innerHTML="Binubuksan camera... pindot mo Allow pag nagtanong";
+// Linisin muna yung luma para hindi mag-black
+try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){}
+document.getElementById('reader').innerHTML="";
+const facing = document.getElementById('cameraMode').value==="front" ? "user" : "environment";
+try{
+html5Qr = new Html5Qrcode("reader");
+await html5Qr.start({facingMode:facing},{fps:30,qrbox:{width:250,height:250},aspectRatio:1.0,disableFlip:false}, txt=>handleScan(txt), ()=>{});
+document.getElementById('scanResult').innerHTML="Camera OK! Itutok mo na sa QR - 15cm lang";
+}catch(e){
+document.getElementById('scanResult').innerHTML="Ayaw mag-open camera: "+e.message+"<br>Check mo: 1) Naka-Allow ba camera sa Settings > Safari > Camera > Allow? 2) Naka-HTTPS ba yung link mo? Dapat tiiny.site, hindi file:// 3) Pindot mo RESTART CAMERA sa baba";
+}
+}
+async function restartScan(){ await openScan(); }
+async function closeScan(){
+scanning=false;
+try{ if(html5Qr){ await html5Qr.stop(); await html5Qr.clear(); html5Qr=null; } }catch(e){}
+document.getElementById('reader').innerHTML="";
+document.getElementById('scanModal').classList.remove('open');
+}
+function handleScan(txt){
+const code=txt.trim().toUpperCase();
+const idx=items.findIndex(it=>(it.code||"").toUpperCase()===code || it.name.toUpperCase()===code);
+if(idx>=0){
+playBeep(true);
+document.getElementById('scanResult').innerHTML=`✅ Na-scan: <b>${items[idx].name} (${items[idx].code})</b> - On Hand: ${cache[idx].onHand}`;
+document.getElementById('search').value=items[idx].code; searchQ=items[idx].code.toLowerCase(); applyFilter(); queueRender();
+setTimeout(closeScan,700);
+} else {
+playBeep(false);
+document.getElementById('scanResult').innerHTML=`❌ Hindi mahanap: ${txt} - baka ibang QR yan, try mo ulit`;
+}
+}
+function scanManual(val){ if(val.length<2) return; const q=val.toLowerCase(); const idx=items.findIndex(it=>it.name.toLowerCase().includes(q)||(it.code||"").toLowerCase()===q); if(idx>=0){ playBeep(true); document.getElementById('scanResult').innerHTML=`✅ Nakita: <b>${items[idx].name} (${items[idx].code})</b> - On Hand: ${cache[idx].onHand} <button onclick="document.getElementById('search').value='${items[idx].code}';searchQ='${items[idx].code.toLowerCase()}';applyFilter();queueRender();closeScan()">Punta</button>`; } }
+function openQR(){ document.getElementById('qrModal').classList.add('open'); renderQR(); }
+function closeQR(){ document.getElementById('qrModal').classList.remove('open'); }
+function qrUrl(code){ return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`; }
+function renderQR(){ const list=document.getElementById('qrList'); list.innerHTML=items.map(it=>`<div class="qr-card"><img src="${qrUrl(it.code)}"><b>${it.name}</b><span>${it.code}</span><div style="font-size:10px;color:#666">${it.loc||""} • ${it.unit}</div></div>`).join(""); }
+function printQR(mode){ const arr=mode==='low'?items.filter((it,i)=>cache[i].pct<100):items; const pa=document.getElementById('printArea'); pa.innerHTML=`<div style="font-family:Arial"><h2 style="text-align:center">QR STICKERS - ${arr.length} items</h2><p style="text-align:center;font-size:12px">Gupitin at idikit.</p><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">${arr.map(it=>`<div style="border:2px dashed #333;border-radius:8px;padding:10px;text-align:center"><img src="${qrUrl(it.code)}" style="width:110px;height:110px"><div style="font-weight:bold;font-size:12px">${it.name}</div><div style="background:#2f2a6b;color:#fff;display:inline-block;padding:2px 8px;border-radius:4px;font-weight:bold">${it.code}</div></div>`).join("")}</div></div>`; pa.style.display="block"; window.print(); setTimeout(()=>pa.style.display="none",500); }
+function exportExcel(){ const data=[["CODE","PRODUCT NAME","LOCATION","UNIT","OPENING","TOTAL IN","TOTAL OUT","ON HAND","LEVEL","STANDARD","%"]]; for(let i=0;i<items.length;i++){ const c=cache[i]; data.push([items[i].code,items[i].name,items[i].loc||"",items[i].unit||'pcs',items[i].open,items[i].in,items[i].out,c.onHand,c.status,items[i].std,c.pct+"%"]); } const ws=XLSX.utils.aoa_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"INVENTORY"); XLSX.writeFile(wb,"INVENTORY_"+new Date().toISOString().slice(0,10)+".xlsx"); }
+function downloadBackup(){ const blob=new Blob([JSON.stringify({date:new Date().toLocaleString(),items,history},null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="BACKUP_INVENTORY_"+new Date().toISOString().slice(0,10)+".json"; a.click(); alert("Backup na-download!"); }
+document.getElementById('universalFile').addEventListener('change',function(){ const file=this.files[0]; if(!file) return; const fn=file.name.toLowerCase(); if(fn.endsWith('.json')){ const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); const arr=d.items||d; if(confirm(`Nakita ${arr.length} items. OK=DAGDAG`)) items=[...items,...arr]; else items=arr; if(d.history) history=d.history; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){} }; r.readAsText(file); } else { const r=new FileReader(); r.onload=e=>{ try{ const wb=XLSX.read(e.target.result,{type:'array'}); const sh=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(sh,{header:1,defval:""}); let ni=[]; let start=0; for(let i=0;i<Math.min(3,json.length);i++){ if(String(json[i]).toLowerCase().includes("product")){start=i+1;break;} } for(let i=start;i<json.length;i++){ const row=json[i]; const name=String(row[1]||row[0]||"").trim(); if(!name||name.toLowerCase().includes("product")) continue; ni.push({name,loc:String(row[2]||""),unit:String(row[3]||"pcs"),open:parseInt(row[4])||0,in:parseInt(row[5])||0,out:parseInt(row[6])||0,std:parseInt(row[9])||1000}); } if(confirm(`Nakita ${ni.length} items. OK=DAGDAG`)) items=[...items,...ni]; else items=ni; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){} }; r.readAsArrayBuffer(file); } this.value=""; });
+applyFilter(); render();
+</script>
+</body>
+</html>
