@@ -3,164 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INVENTORY STOCK LIST</title>
+<title>SUMMARY OF INVENTORY</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box} body{font-family:Arial,sans-serif;margin:0;background:#f1f5f9;padding:10px;padding-bottom:40px}
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;background:#f1f5f9;padding:10px;padding-bottom:40px}
 .header{background:linear-gradient(135deg,#312e81,#1e1b4b);color:#fff;padding:16px 20px;border-radius:12px;text-align:center}
-.header h1{margin:0;font-size:22px;letter-spacing:1px} .header p{margin:4px 0 0;font-size:12px;letter-spacing:2px;opacity:.8}
-.stats{display:flex;gap:8px;margin:10px 0}
-.stat{flex:1;padding:14px 6px;border-radius:10px;color:#fff;text-align:center}
-.stat b{font-size:24px;display:block} .stat span{font-size:11px;letter-spacing:.5px}
-.blue{background:#4338ca} .orange{background:#fb923c} .green2{background:#16a34a} .green3{background:#22c55e}
-.badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:bold}
-.admin{background:#22c55e;color:#fff} .viewer{background:#f59e0b;color:#fff} .offline{background:#ef4444;color:#fff}
-.topbar{display:flex;gap:8px;justify-content:center;margin:6px 0 10px;flex-wrap:wrap}
-.searchwrap{position:relative}
-.search{width:100%;padding:13px 45px 13px 40px;border:2px solid #c7d2fe;border-radius:10px;font-size:16px;background:#fff}
-.searchwrap:before{content:"🔍";position:absolute;left:12px;top:12px;font-size:18px}
-.clearBtn{position:absolute;right:8px;top:7px;background:#334155;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:bold;cursor:pointer}
-.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
-.pill{padding:8px 14px;border-radius:20px;border:0;background:#e2e8f0;font-weight:bold;cursor:pointer;font-size:13px}
-.pill.active{background:#312e81;color:#fff}
-.pill.light{background:#fef9c3} .pill.purple{background:#e9d5ff} .pill.blue2{background:#dbeafe}
-.showline{font-size:12px;color:#64748b;display:flex;justify-content:space-between;margin:4px 0 10px}
-.panel{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px}
-.panel h3{margin:0 0 10px;font-size:13px;color:#64748b}
-.grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
-@media(max-width:700px){.grid{grid-template-columns:1fr 1fr} .stats{flex-wrap:wrap} .stat{flex:1 1 40%}}
-.btn{padding:13px 8px;border:0;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px;color:#fff}
-.btn-blue{background:#4338ca} .btn-green{background:#059669} .btn-teal{background:#0ea5e9} .btn-yellow{background:#f59e0b} .btn-dark{background:#334155} .btn-purple{background:#7c3aed} .btn-red{background:#ef4444}
-.btn-orange{background:#ea580c}
-.settings{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:600px){.settings{grid-template-columns:1fr}}
-.settings label{font-size:13px;color:#64748b;display:block;margin-bottom:6px}
-.settings input,.settings select{width:100%;padding:11px;border:1px solid #ddd;border-radius:8px;font-size:15px;background:#fff}
-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden}
-th{background:#f8fafc;padding:10px;text-align:left;font-size:12px;color:#64748b}
-td{padding:10px;border-top:1px solid #eee;font-size:14px}
-td b{font-size:14px}
-.qty{font-weight:bold;font-size:16px}
-.qbtn{padding:7px 10px;border:0;border-radius:8px;font-weight:bold;cursor:pointer}
-.qbtn.red{background:#fee2e2} .qbtn.green{background:#dcfce7}
-.lowRow{background:#fff7ed}
-#scanBox,#qrBox,#histBox,#addBox{background:#fff;padding:14px;border-radius:12px;margin-bottom:10px;display:none}
-#reader{width:100%;border-radius:10px;overflow:hidden}
-.hist-item{padding:8px 0;border-bottom:1px solid #eee;font-size:13px}
-.sticker{border:2px dashed #000;padding:14px;text-align:center;background:#fff;border-radius:8px;margin:10px 0}
-@media print{ body *{visibility:hidden} #printArea, #printArea *{visibility:visible} #printArea{position:absolute;top:0;left:0;width:100%} }
+.header h1{margin:0;font-size:22px;letter-spacing:1px}.header p{margin:4px 0 0;font-size:12px;letter-spacing:2px;opacity:.8}
+.cards{display:flex;gap:8px;margin:10px 0}.card{flex:1;padding:14px 6px;border-radius:10px;color:#fff;text-align:center;cursor:pointer}
+.card b{font-size:24px;display:block}.card span{font-size:11px}.card.blue{background:#4338ca}.card.orange{background:#fb923c}.card.green{background:#16a34a}.card.lightgreen{background:#22c55e}
+.search-wrap{background:#fff;padding:10px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.search-box{display:flex;align-items:center;gap:8px;border:2px solid #c7d2fe;border-radius:10px;padding:6px 10px}
+.search-box input{flex:1;border:0;outline:none;font-size:16px;padding:7px}.search-box button{background:#334155;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:bold;cursor:pointer}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.chip{padding:8px 14px;border-radius:20px;background:#e2e8f0;font-weight:bold;cursor:pointer;font-size:13px}.chip.active{background:#312e81;color:#fff}
+.toolbox{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin:10px 0}
+.tool-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:700px){.tool-grid{grid-template-columns:repeat(2,1fr)}.cards{flex-wrap:wrap}.card{flex:1 1 40%}}
+.tool-grid button{padding:13px 6px;border:0;border-radius:10px;font-weight:bold;cursor:pointer;font-size:13px;color:#fff}
+.btn-excel{background:#4338ca}.btn-backup{background:#f59e0b}.btn-qr{background:#ea580c}.btn-print{background:#334155}.btn-history{background:#0ea5e9}.btn-scan{background:#7c3aed}.btn-danger{background:#ef4444}
+.row{display:flex;gap:10px}.field{flex:1}.field label{font-size:13px;color:#64748b;display:block;margin-bottom:6px}.field input,.field select{width:100%;padding:11px;border:1px solid #ddd;border-radius:8px;font-size:15px;background:#fff}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;display:block;overflow-x:auto}
+th{background:#f8fafc;padding:10px;text-align:left;font-size:12px;color:#64748b;white-space:nowrap}td{padding:10px;border-top:1px solid #eee;font-size:14px;white-space:nowrap}
+.status{padding:4px 8px;border-radius:10px;font-size:11px;font-weight:bold;color:#fff;text-align:center}.status.low{background:#ef4444}.status.below{background:#f97316}.status.above{background:#16a34a}
+.pct{padding:4px 8px;border-radius:10px;font-size:12px;font-weight:bold;text-align:center}.pct-red{background:#fee2e2;color:#991b1b}.pct-yellow{background:#fef9c3;color:#854d0e}.pct-green{background:#dcfce7;color:#166534}
+.btn-in{background:#dcfce7;border:0;padding:7px 10px;border-radius:8px;font-weight:bold;cursor:pointer}.btn-out{background:#fee2e2;border:0;padding:7px 10px;border-radius:8px;font-weight:bold;cursor:pointer}.btn-edit{background:#e9d5ff;border:0;padding:7px 10px;border-radius:8px;font-weight:bold;cursor:pointer}.btn-del{background:#eee;border:0;padding:7px 10px;border-radius:8px;font-weight:bold;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;padding:10px;overflow:auto}.modal-box{background:#fff;border-radius:16px;padding:16px;max-width:560px;margin:20px auto}
+#pager{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap}#pager button{padding:8px 12px;border:0;border-radius:8px;background:#e2e8f0;font-weight:bold;cursor:pointer}#pager button.active{background:#312e81;color:#fff}
+.badge{display:inline-block;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:bold;color:#fff}
+@media print{body *{visibility:hidden}#printArea,#printArea *{visibility:visible}#printArea{position:absolute;left:0;top:0;width:100%;display:block!important}}
 </style>
 </head>
 <body>
-<div class="header">
-<h1>SUMMARY OF INVENTORY</h1>
-<p>INVENTORY STOCK LIST</p>
+<div class="header"><h1>SUMMARY OF INVENTORY</h1><p>INVENTORY STOCK LIST</p></div>
+<div style="display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap"><span id="modeBadge" class="badge" style="background:#22c55e">🔧 ADMIN - IKAW</span><span id="cloudBadge" class="badge" style="background:#ef4444">● CONNECTING...</span><span id="cloudStatus" style="font-size:12px;color:#475569;padding:5px"></span></div>
+<div id="viewerBar" style="display:none;background:#fef3c7;padding:10px;border-radius:10px;text-align:center;font-weight:bold;margin-bottom:8px">👁️ VIEWER - SI SIR - Bawal mag-edit, tingin lang <button onclick="location.reload()" style="padding:6px 12px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:bold">🔄 REFRESH</button></div>
+<div class="cards">
+<div class="card blue" onclick="showAll()"><b id="totalItems">0</b><span>TOTAL ITEMS</span></div>
+<div class="card orange" onclick="filterLow()"><b id="lowStock">0</b><span>LOW OF STOCK</span></div>
+<div class="card green" onclick="filterNeed()"><b id="needOrder">0</b><span>NEED TO REORDER</span></div>
+<div class="card lightgreen"><b id="okLevel">0</b><span>OK / ABOVE LEVEL</span></div>
 </div>
+<div class="search-wrap">
+<div class="search-box"><span>🔍</span><input id="search" placeholder="Search... ex: ADAPTER, ITEM-001" autocomplete="off"><button onclick="clearSearch()">X</button></div>
+<div class="chips">
+<div class="chip active" data-filter="ALL" onclick="setFilter(this)">ALL</div>
+<div class="chip" data-filter="LOW OF STOCK" onclick="setFilter(this)">LOW</div>
+<div class="chip" data-filter="BELOW LEVEL" onclick="setFilter(this)">BELOW</div>
+<div class="chip" data-filter="ABOVE LEVEL" onclick="setFilter(this)">ABOVE</div>
+<div class="chip" style="background:#fff3e0" onclick="openQR()">🏷️ PRINT QR</div>
+<div class="chip" style="background:#f3e5f5" onclick="openScan()">⚡ FAST SCAN - BEEP!</div>
+<div class="chip" style="background:#e0f2f1" onclick="openHistory()">📋 HISTORY</div>
+</div>
+<div style="font-size:12px;color:#666;margin-top:6px;display:flex;justify-content:space-between"><span id="resultCount"></span><span id="renderTime"></span></div>
+</div>
+<div class="toolbox">
+<h3 style="margin:0 0 8px;font-size:13px">📦 EXPORT • BACKUP • PRINT • QR • FAST SCAN</h3>
+<div class="tool-grid">
+<button class="btn-excel" onclick="exportExcel()">📊 EXPORT .xlsx</button>
+<button class="btn-excel" onclick="document.getElementById('universalFile').click()">📥 IMPORT LAHAT</button>
+<button class="btn-backup" onclick="downloadBackup()">💾 BACKUP</button>
+<button class="btn-qr" onclick="openQR()">🏷️ PRINT QR STICKERS</button>
+<button class="btn-print" onclick="printReorder()">🖨️ PRINT REORDER</button>
+<button class="btn-history" onclick="openHistory()">📋 HISTORY LOG</button>
+<button class="btn-scan" onclick="openScan()">⚡ FAST SCAN - BEEP!</button>
+<button class="btn-danger" onclick="clearCache()">⚡ CLEAR CACHE</button>
+</div>
+<div style="font-size:11px;color:#666;text-align:center;margin-top:6px" id="backupInfo">Auto-Backup: ON • Selectable QR: ON</div>
+<input type="file" id="universalFile" accept=".xlsx,.xls,.csv,.json,.txt,.tsv" hidden>
+</div>
+<div class="row" style="margin-bottom:8px"><div class="field"><label>👤 Pangalan mo</label><input id="userName" placeholder="Ex: MIGUEL"></div><div class="field"><label>Sort By</label><select id="sortBy" onchange="changeSort()"><option value="name">Name A-Z</option><option value="pctAsc">Pinaka-ubos muna</option><option value="pctDesc">Pinaka-marami muna</option><option value="onHandAsc">On Hand - mababa muna</option></select></div></div>
+<div class="row" style="margin-bottom:8px"><div class="field"><label>🔊 Tunog</label><select id="soundToggle" onchange="localStorage.setItem('inventory_sound',this.value)"><option value="on">ON - May BEEP</option><option value="off">OFF - Walang BEEP</option></select></div><div class="field"><label>📷 Camera</label><select><option>Back Camera - pang-scan</option><option>Front Camera</option></select></div></div>
+<div class="row" style="margin-bottom:8px"><div class="field"><label>➕ Bagong Item - Name</label><input id="quickName" placeholder="Ex: ADAPTER"></div><div class="field"><label>Qty / Std</label><input id="quickQty" type="number" placeholder="Std ex: 1000" value="1000"></div><div class="field"><label>&nbsp;</label><button onclick="quickAdd()" style="width:100%;padding:11px;background:#16a34a;color:#fff;border:0;border-radius:8px;font-weight:bold">+ ADD</button></div></div>
+<div id="adminBtns" style="margin-bottom:8px"><button onclick="uploadToCloud()" style="width:100%;padding:12px;background:#2563eb;color:#fff;border:0;border-radius:10px;font-weight:bold">☁️ I-UPLOAD SA CLOUD NGAYON - Para makita ni Sir</button></div>
+<table><thead><tr><th>CODE</th><th>PRODUCT NAME</th><th>LOCATION</th><th>UNIT</th><th>OPENING</th><th>TOTAL IN</th><th>TOTAL OUT</th><th>ON HAND</th><th>STATUS</th><th>STANDARD</th><th>%</th><th>ACTION</th></tr></thead><tbody id="tbody"></tbody></table>
+<div id="pager"></div>
+<div style="text-align:center;font-size:12px;color:#888" id="perfInfo"></div>
 
-<div class="stats">
-<div class="stat blue"><b id="total">0</b><span>TOTAL ITEMS</span></div>
-<div class="stat orange"><b id="low">0</b><span>LOW OF STOCK</span></div>
-<div class="stat green2"><b id="reorder">0</b><span>NEED TO REORDER</span></div>
-<div class="stat green3"><b id="ok">0</b><span>OK / ABOVE LEVEL</span></div>
-</div>
+<div id="qrModal" class="modal"><div class="modal-box"><h3 style="margin:0">🏷️ PRINT QR STICKERS</h3><p style="font-size:12px;color:#666">Piliin mo, tapos PRINT. Selectable QR: ON</p><div style="display:flex;gap:6px;margin-bottom:10px"><input id="qrSearch" placeholder="Search pang-QR..." oninput="renderQRList()" style="flex:1;padding:10px;border:1px solid #ddd;border-radius:8px"><button onclick="selectAllQR()" style="padding:10px;background:#eee;border:0;border-radius:8px;font-weight:bold">SELECT ALL</button></div><div id="qrList" style="max-height:300px;overflow:auto"></div><div id="printArea" style="margin-top:10px"></div><button onclick="doPrintQR()" style="width:100%;padding:12px;background:#312e81;color:#fff;border:0;border-radius:10px;font-weight:bold;margin-top:10px">🖨️ PRINT SELECTED QR</button><button onclick="closeQR()" style="width:100%;padding:10px;background:#eee;border:0;border-radius:10px;margin-top:6px">Close</button></div></div>
+<div id="scanModal" class="modal"><div class="modal-box"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">⚡ FAST SCAN - BEEP!</h3><button onclick="closeScan()" style="background:#ff3b30;color:#fff;width:34px;height:34px;border-radius:50%;border:0">✕</button></div><p style="font-size:12px;color:#666">Itutok mo lang mga <b>15cm - isang dangkal</b>. Pag nasa green box na, <b>BEEP agad</b>.</p><div id="reader"></div><div class="field" style="margin-top:12px"><label>Or type CODE - may BEEP din</label><input id="scanInput" placeholder="Ex: ITEM-001" oninput="scanManual(this.value)"></div><div id="scanResult" style="font-size:13px"></div><div style="display:flex;gap:6px"><button onclick="testBeep()" style="flex:1;background:#2f2a6b;color:#fff;padding:11px;border:0;border-radius:8px;font-weight:bold">🔊 TEST BEEP</button><button onclick="restartScan()" style="flex:1;background:#ff9800;color:#fff;padding:11px;border:0;border-radius:8px;font-weight:bold">🔄 RESTART CAMERA</button></div><button onclick="closeScan()" style="width:100%;margin-top:8px;background:#eee;padding:10px;border:0;border-radius:8px">Close Camera</button></div></div>
+<div id="histModal" class="modal"><div class="modal-box"><h3 style="margin:0">📋 HISTORY LOG</h3><div id="histList" style="margin-top:10px;max-height:400px;overflow:auto"></div><button onclick="closeHistory()" style="width:100%;padding:10px;background:#eee;border:0;border-radius:8px;margin-top:10px">Close</button></div></div>
+<div id="editModal" class="modal"><div class="modal-box"><h3 style="margin:0">✏️ EDIT ITEM</h3><div class="field" style="margin-top:10px"><label>Name</label><input id="eName"></div><div class="field"><label>Location</label><input id="eLoc"></div><div class="field"><label>Unit</label><input id="eUnit"></div><div class="field"><label>Opening</label><input id="eOpen" type="number"></div><div class="field"><label>Total IN</label><input id="eIn" type="number"></div><div class="field"><label>Total OUT</label><input id="eOut" type="number"></div><div class="field"><label>Standard</label><input id="eStd" type="number"></div><input type="hidden" id="eIdx"><button onclick="saveEdit()" style="width:100%;padding:12px;background:#16a34a;color:#fff;border:0;border-radius:10px;font-weight:bold;margin-top:10px">💾 SAVE</button><button onclick="closeEdit()" style="width:100%;padding:10px;background:#eee;border:0;border-radius:8px;margin-top:6px">Cancel</button></div></div>
 
-<div class="topbar">
-<span id="modeBadge" class="badge admin">🔧 ADMIN - IKAW</span>
-<span id="cloudBadge" class="badge offline">● CONNECTING...</span>
-<span id="status" style="font-size:12px;color:#475569"></span>
-</div>
-
-<div class="searchwrap">
-<input id="search" class="search" placeholder="Search... ex: ADAPTER, ITEM-001" oninput="render()">
-<button class="clearBtn" onclick="document.getElementById('search').value='';render()">X</button>
-</div>
-
-<div class="pills">
-<button class="pill active" data-f="ALL" onclick="setFilter(this,'ALL')">ALL</button>
-<button class="pill" data-f="LOW" onclick="setFilter(this,'LOW')">LOW</button>
-<button class="pill" data-f="BELOW" onclick="setFilter(this,'BELOW')">BELOW</button>
-<button class="pill" data-f="ABOVE" onclick="setFilter(this,'ABOVE')">ABOVE</button>
-<button class="pill light" onclick="openQR()">🏷️ PRINT QR</button>
-<button class="pill purple" onclick="toggleScan()">⚡ FAST SCAN - BEEP!</button>
-<button class="pill blue2" onclick="showHist()">🧾 HISTORY</button>
-</div>
-<div class="showline"><span id="showTxt">Showing 1-50 of 0</span><span id="ms">⚡ 5.8ms</span></div>
-
-<div class="panel">
-<h3>🧭 EXPORT • BACKUP • PRINT • QR • FAST SCAN</h3>
-<div class="grid" id="adminBtns">
-<button class="btn btn-blue" onclick="exportXlsx()">📊 EXPORT .xlsx</button>
-<button class="btn btn-green" onclick="document.getElementById('file').click()">📥 IMPORT LAHAT</button>
-<button class="btn btn-yellow" onclick="exportBackup()">💾 BACKUP</button>
-<button class="btn btn-orange" onclick="openQR()">🏷️ PRINT QR STICKERS</button>
-<button class="btn btn-dark" onclick="printReorder()">🖨️ PRINT REORDER</button>
-<button class="btn btn-teal" onclick="showHist()">🧾 HISTORY LOG</button>
-<button class="btn btn-purple" onclick="toggleScan()">⚡ FAST SCAN - BEEP!</button>
-<button class="btn btn-red" onclick="clearCache()">🧹 CLEAR CACHE</button>
-</div>
-<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-<button class="btn btn-blue" onclick="uploadToCloud()" style="flex:1">☁️ I-UPLOAD SA CLOUD NGAYON</button>
-<button class="btn btn-green" onclick="toggleAdd()" style="flex:1">+ ADD ITEM</button>
-</div>
-<div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:8px">Auto-Backup: ON • Selectable QR: ON • <span id="cloudTxt">Cloud: Connecting...</span></div>
-</div>
-
-<div id="scanBox">
-<h3 style="margin:0 0 8px">⚡ FAST SCAN - BEEP! I-tutok sa Barcode</h3>
-<div id="reader"></div>
-<button class="btn btn-red" onclick="stopScan()">✖️ ISARA CAMERA</button>
-<p style="font-size:12px;color:#64748b">Pag na-scan, auto +IN + BEEP agad.</p>
-</div>
-
-<div id="qrBox">
-<h3 style="margin:0 0 8px">🏷️ PRINT QR STICKERS</h3>
-<input id="sCode" placeholder="Code para sa sticker">
-<input id="sName" placeholder="Name para sa sticker">
-<div id="printArea"><div class="sticker"><b id="stickerName" style="font-size:18px">NAME</b><br><svg id="barcode"></svg><div id="stickerCode" style="font-weight:bold">CODE</div></div></div>
-<button class="btn btn-dark" onclick="makeSticker()">🔍 GAWA STICKER</button>
-<button class="btn btn-purple" onclick="window.print()">🖨️ PRINT STICKER</button>
-<button class="btn" style="background:#e2e8f0" onclick="document.getElementById('qrBox').style.display='none'">ISARA</button>
-</div>
-
-<div id="addBox">
-<h3 style="margin:0 0 8px">Bagong / Edit Item</h3>
-<input id="nCode" placeholder="Code / Barcode" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px">
-<input id="nName" placeholder="Name (ex: ADAPTER)" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px">
-<input id="nQty" type="number" placeholder="Qty" value="1" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px">
-<input id="nLoc" placeholder="Location (ex: A1)" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px">
-<select id="nCat" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px"><option>Pagkain</option><option>Inumin</option><option>Sabon / Hygiene</option><option>Delata</option><option>Snacks</option><option>Iba pa</option><option>Electronics</option></select>
-<input id="nMin" type="number" placeholder="Reorder level (ex: 10)" value="10" style="padding:11px;border:1px solid #ddd;border-radius:8px;width:100%;margin-bottom:8px">
-<input type="hidden" id="editIdx" value="-1">
-<button class="btn btn-green" onclick="addItem()">💾 SAVE</button>
-<button class="btn" style="background:#e2e8f0" onclick="toggleAdd()">CANCEL</button>
-</div>
-
-<div id="histBox">
-<h3 style="margin:0 0 8px">🧾 HISTORY LOG</h3>
-<button class="btn btn-red" onclick="clearHist()">🗑️ BURAHIN HISTORY</button>
-<div id="histList"></div>
-<button class="btn" style="background:#e2e8f0;margin-top:8px" onclick="document.getElementById('histBox').style.display='none'">ISARA</button>
-</div>
-
-<div class="panel" id="viewerBtns" style="display:none">
-<button class="btn btn-blue" onclick="location.reload()" style="width:100%">🔄 REFRESH - Tingnan kung may bago</button>
-</div>
-
-<table><thead><tr><th>ITEM / CODE</th><th>LOCATION</th><th>QTY</th><th>STATUS</th><th id="thAction">ACTION</th></tr></thead><tbody id="list"></tbody></table>
-
-<div class="panel" style="margin-top:10px">
-<div class="settings">
-<div><label>👤 Pangalan mo</label><input id="pangalan" value="rommel" onchange="localStorage.setItem('pangalan',this.value)"></div>
-<div><label>Sort By</label><select id="fSort" onchange="render()"><option value="name">Name A-Z</option><option value="qty-low">Qty - Paubos muna</option><option value="qty-high">Qty - Marami muna</option><option value="loc">Location</option></select></div>
-<div><label>🔊 Tunog</label><select id="tunog"><option>ON - May BEEP</option><option>OFF - Walang BEEP</option></select></div>
-<div><label>📷 Camera</label><select><option>Back Camera - pang-scan</option><option>Front Camera</option></select></div>
-</div>
-</div>
-
-<input type="file" id="file" accept=".json,.xlsx,.xls" style="display:none" onchange="importFile(event)">
-
+<script>
+const PAGE_SIZE=50;
+let items=[]; let cache=[]; let filteredIdx=[]; let history=[]; let selectedQR=new Set();
+let currentFilter="ALL", currentPage=1, searchQ="", sortMode="name", renderQueued=false, saveTimer=null, html5Qr=null, audioCtx=null, scanning=false;
+try{ items=JSON.parse(localStorage.getItem('inventory_data')||'[]'); history=JSON.parse(localStorage.getItem('inventory_history')||'[]'); }catch(e){ items=[]; history=[]; }
+try{ const old=JSON.parse(localStorage.getItem('malamok_inventory')||'[]'); if(items.length===0 && old.length>0){ items=old.map(o=>({name:o.name,loc:o.loc,unit:o.unit,open:o.open,in:o.in,out:o.out,std:o.std,code:o.code})); } }catch(e){}
+if(items.length===0){ items=[{name:'NUT 4" BACK',loc:'',unit:'pcs',open:313,in:0,out:0,std:1000},{name:'MALE ADAPTER 75mm LC',loc:'',unit:'pcs',open:535,in:0,out:0,std:1000},{name:'FEMALE ADAPTER 25mm LC',loc:'',unit:'pcs',open:600,in:0,out:0,std:1000}]; }
+function ensureCodes(){ items.forEach((it,i)=>{ if(!it.code || it.code.startsWith('MAL-')) it.code="ITEM-"+String(i+1).padStart(3,'0'); if(it.loc==="MALAMOK") it.loc=""; }); }
+ensureCodes();
+document.getElementById('userName').value=localStorage.getItem('inventory_user')||"";
+document.getElementById('userName').addEventListener('change',e=>localStorage.setItem('inventory_user',e.target.value));
+document.getElementById('soundToggle').value=localStorage.getItem('inventory_sound')||"on";
+function playBeep(success){
+if((localStorage.getItem('inventory_sound')||"on")==="off" && success) return;
+try{
+if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==="suspended") audioCtx.resume();
+const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain();
+osc.connect(gain); gain.connect(audioCtx.destination);
+if(success){ osc.frequency.value=1200; osc.type='square'; gain.gain.value=0.25; osc.start(); osc.stop(audioCtx.currentTime+0.12); if(navigator.vibrate) navigator.vibrate(60); }
+else{ osc.frequency.value=300; osc.type='square'; gain.gain.value=0.25; osc.start(); osc.stop(audioCtx.currentTime+0.25); if(navigator.vibrate) navigator.vibrate([80,40,80]); }
+}catch(e){}
+}
+function testBeep(){ playBeep(true); document.getElementById('scanResult').innerHTML="Narining mo? Kung wala, taasan mo volume, wag naka-silent."; }
+function rebuildCache(){ cache=items.map(it=>{ const onHand=it.open+it.in-it.out; const pct=it.std?Math.round(onHand/it.std*100):0; const status=pct<=0?"LOW OF STOCK":pct<100?"BELOW LEVEL":"ABOVE LEVEL"; return {onHand,pct,status,nameLower:it.name.toLowerCase(),locLower:(it.loc||"").toLowerCase(),codeLower:(it.code||"").toLowerCase()}; }); }
+rebuildCache();
+function updateSummary(){ let low=0,need=0,ok=0; for(let c of cache){ if(c.status==="LOW OF STOCK")low++; if(c.pct<100)need++; if(c.status==="ABOVE LEVEL")ok++; } document.getElementById('totalItems').textContent=items.length; document.getElementById('lowStock').textContent=low; document.getElementById('needOrder').textContent=need; document.getElementById('okLevel').textContent=ok; }
+function applyFilter(){ filteredIdx=[]; for(let i=0;i<items.length;i++){ const c=cache[i]; if(currentFilter!=="ALL"&&c.status!==currentFilter) continue; if(searchQ&&!c.nameLower.includes(searchQ)&&!c.locLower.includes(searchQ)&&!c.codeLower.includes(searchQ)) continue; filteredIdx.push(i); } if(sortMode==="name") filteredIdx.sort((a,b)=>items[a].name.localeCompare(items[b].name)); if(sortMode==="pctAsc") filteredIdx.sort((a,b)=>cache[a].pct-cache[b].pct); if(sortMode==="pctDesc") filteredIdx.sort((a,b)=>cache[b].pct-cache[a].pct); if(sortMode==="onHandAsc") filteredIdx.sort((a,b)=>cache[a].onHand-cache[b].onHand); currentPage=1; }
+function save(quick){ if(saveTimer) clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem('inventory_data',JSON.stringify(items)); localStorage.setItem('inventory_history',JSON.stringify(history.slice(-500))); }catch(e){} document.getElementById('backupInfo').textContent="Saved: "+new Date().toLocaleTimeString(); if(window.__uploadToCloud) window.__uploadToCloud(); },quick?0:300); queueRender(); }
+function queueRender(){ if(renderQueued) return; renderQueued=true; requestAnimationFrame(()=>{renderQueued=false; render();}); }
+function addHistory(name,action,qty,unit){ history.unshift({time:new Date().toLocaleString(),user:document.getElementById('userName').value||"Unknown",name,action,qty,unit}); if(history.length>1000) history=history.slice(0,1000); }
+function render(){ const t0=performance.now(); updateSummary(); const totalPages=Math.max(1,Math.ceil(filteredIdx.length/PAGE_SIZE)); if(currentPage>totalPages) currentPage=totalPages; const start=(currentPage-1)*PAGE_SIZE; const end=Math.min(start+PAGE_SIZE,filteredIdx.length); const tb=document.getElementById('tbody'); const frag=document.createDocumentFragment(); for(let k=start;k<end;k++){ const idx=filteredIdx[k]; const it=items[idx]; const c=cache[idx]; const tr=document.createElement('tr'); const pctClass=c.pct<=30?"pct-red":c.pct<100?"pct-yellow":"pct-green"; const stClass=c.status==="LOW OF STOCK"?"low":c.status==="BELOW LEVEL"?"below":"above"; tr.innerHTML=`<td><b>${it.code}</b></td><td><b>${it.name}</b></td><td>${it.loc||"-"}</td><td style="text-align:center">${it.unit||'pcs'}</td><td style="text-align:center">${it.open}</td><td style="text-align:center">${it.in}</td><td style="text-align:center">${it.out}</td><td style="text-align:center"><b>${c.onHand}</b></td><td><div class="status ${stClass}">${c.status}</div></td><td style="text-align:center">${it.std}</td><td><div class="pct ${pctClass}">${c.pct}%</div></td><td><div class="row"><button class="btn-in" data-act="in" data-idx="${idx}">+IN</button><button class="btn-out" data-act="out" data-idx="${idx}">-OUT</button></div><div class="row" style="margin-top:4px"><button class="btn-edit" data-act="edit" data-idx="${idx}">EDIT</button><button class="btn-del" data-act="del" data-idx="${idx}">DELETE</button></div></td>`; frag.appendChild(tr); } tb.textContent=""; tb.appendChild(frag); document.getElementById('resultCount').textContent=`Showing ${filteredIdx.length===0?0:start+1}-${end} of ${filteredIdx.length} (Page ${currentPage}/${totalPages})`; document.getElementById('renderTime').textContent=`⚡ ${(performance.now()-t0).toFixed(1)}ms`; document.getElementById('perfInfo').textContent=`Total: ${items.length} items • 50 per page`; const pager=document.getElementById('pager'); pager.innerHTML=""; if(totalPages>1){ const mk=(l,p,d,a)=>{ const b=document.createElement('button'); b.textContent=l; b.disabled=!!d; if(a) b.className='active'; b.onclick=()=>{currentPage=p; queueRender();}; pager.appendChild(b); }; mk("◀ Prev",Math.max(1,currentPage-1),currentPage===1); let s=Math.max(1,currentPage-2),e=Math.min(totalPages,s+4); for(let p=s;p<=e;p++) mk(String(p),p,false,p===currentPage); mk("Next ▶",Math.min(totalPages,currentPage+1),currentPage===totalPages); } }
+document.getElementById('tbody').addEventListener('click',e=>{ const btn=e.target.closest('button'); if(!btn) return; const idx=parseInt(btn.dataset.idx); const act=btn.dataset.act; if(act==="in"||act==="out"){ const qty=parseInt(prompt(act==="in"?`Ilan IN? - ${items[idx].name}`:`Ilan OUT? - ${items[idx].name}`,"1")); if(!qty) return; if(act==="in") items[idx].in+=qty; else items[idx].out+=qty; addHistory(items[idx].name,act==="in"?"IN":"OUT",qty,items[idx].unit||'pcs'); playBeep(true); const it=items[idx]; const onHand=it.open+it.in-it.out; const pct=it.std?Math.round(onHand/it.std*100):0; cache[idx]={onHand,pct,status:pct<=0?"LOW OF STOCK":pct<100?"BELOW LEVEL":"ABOVE LEVEL",nameLower:it.name.toLowerCase(),locLower:(it.loc||"").toLowerCase(),codeLower:(it.code||"").toLowerCase()}; save(true); } else if(act==="edit") editItem(idx); else if(act==="del") del(idx); });
+let searchTimer=null; document.getElementById('search').addEventListener('input',e=>{ if(searchTimer) clearTimeout(searchTimer); searchTimer=setTimeout(()=>{ searchQ=e.target.value.trim().toLowerCase(); applyFilter(); queueRender(); },150); });
+function setFilter(el){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); currentFilter=el.dataset.filter; applyFilter(); queueRender(); }
+function clearSearch(){ document.getElementById('search').value=""; searchQ=""; applyFilter(); queueRender(); }
+function showAll(){ currentFilter="ALL"; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter==="ALL")); applyFilter(); queueRender(); }
+function filterLow(){ currentFilter="LOW OF STOCK"; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter==="LOW OF STOCK")); applyFilter(); queueRender(); }
+function filterNeed(){ currentFilter="BELOW LEVEL"; document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c.dataset.filter==="BELOW LEVEL")); applyFilter(); queueRender(); }
+function changeSort(){ sortMode=document.getElementById('sortBy').value; applyFilter(); queueRender(); }
+function quickAdd(){ const name=document.getElementById('quickName').value.trim(); if(!name) return alert("Lagyan mo Name"); const std=parseInt(document.getElementById('quickQty').value||1000); items.push({name,loc:'',unit:'pcs',open:0,in:0,out:0,std,code:""}); ensureCodes(); rebuildCache(); applyFilter(); save(true); document.getElementById('quickName').value=""; alert("Na-add: "+name); }
+function editItem(idx){ document.getElementById('eIdx').value=idx; document.getElementById('eName').value=items[idx].name; document.getElementById('eLoc').value=items[idx].loc||""; document.getElementById('eUnit').value=items[idx].unit||"pcs"; document.getElementById('eOpen').value=items[idx].open; document.getElementById('eIn').value=items[idx].in; document.getElementById('eOut').value=items[idx].out; document.getElementById('eStd').value=items[idx].std; document.getElementById('editModal').style.display="block"; }
+function saveEdit(){ const idx=parseInt(document.getElementById('eIdx').value); items[idx].name=document.getElementById('eName').value; items[idx].loc=document.getElementById('eLoc').value; items[idx].unit=document.getElementById('eUnit').value; items[idx].open=parseInt(document.getElementById('eOpen').value||0); items[idx].in=parseInt(document.getElementById('eIn').value||0); items[idx].out=parseInt(document.getElementById('eOut').value||0); items[idx].std=parseInt(document.getElementById('eStd').value||1000); addHistory(items[idx].name,"EDIT",0,items[idx].unit); rebuildCache(); applyFilter(); save(true); closeEdit(); }
+function closeEdit(){ document.getElementById('editModal').style.display="none"; }
+function del(idx){ if(!confirm("Delete "+items[idx].name+"?")) return; addHistory(items[idx].name,"DELETE",0,items[idx].unit); items.splice(idx,1); rebuildCache(); applyFilter(); save(true); }
+function exportExcel(){ const data=[["CODE","PRODUCT NAME","LOCATION","UNIT","OPENING","TOTAL IN","TOTAL OUT","ON HAND","LEVEL","STANDARD","%"]]; for(let i=0;i<items.length;i++){ const c=cache[i]; data.push([items[i].code,items[i].name,items[i].loc||"",items[i].unit||'pcs',items[i].open,items[i].in,items[i].out,c.onHand,c.status,items[i].std,c.pct+"%"]); } const ws=XLSX.utils.aoa_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"INVENTORY"); XLSX.writeFile(wb,"INVENTORY_"+new Date().toISOString().slice(0,10)+".xlsx"); }
+function downloadBackup(){ const blob=new Blob([JSON.stringify({date:new Date().toLocaleString(),items,history},null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="BACKUP_INVENTORY_"+new Date().toISOString().slice(0,10)+".json"; a.click(); alert("Backup na-download!"); }
+document.getElementById('universalFile').addEventListener('change',function(){ const file=this.files[0]; if(!file) return; const fn=file.name.toLowerCase(); if(fn.endsWith('.json')){ const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); const arr=d.items||d; if(confirm(`Nakita ${arr.length} items. OK=DAGDAG`)) items=[...items,...arr]; else items=arr; if(d.history) history=d.history; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){} }; r.readAsText(file); } else { const r=new FileReader(); r.onload=e=>{ try{ const wb=XLSX.read(e.target.result,{type:'array'}); const sh=wb.Sheets[wb.SheetNames[0]]; const json=XLSX.utils.sheet_to_json(sh,{header:1,defval:""}); let ni=[]; let start=0; for(let i=0;i<Math.min(3,json.length);i++){ if(String(json[i]).toLowerCase().includes("product")){start=i+1;break;} } for(let i=start;i<json.length;i++){ const row=json[i]; const name=String(row[1]||row[0]||"").trim(); if(!name||name.toLowerCase().includes("product")) continue; ni.push({code:String(row[0]||""),name,loc:String(row[2]||""),unit:String(row[3]||"pcs"),open:parseInt(row[4]||0),in:parseInt(row[5]||0),out:parseInt(row[6]||0),std:parseInt(row[9]||1000)}); } if(confirm(`Nakita ${ni.length} items. OK=DAGDAG`)) items=[...items,...ni]; else items=ni; ensureCodes(); rebuildCache(); applyFilter(); save(true); alert("Imported!"); }catch(err){ alert(err.message);} }; r.readAsArrayBuffer(file); } });
+function printReorder(){ const need=items.filter((_,i)=>cache[i].pct<100); const w=window.open("","_blank"); w.document.write(`<h1>NEED TO REORDER - ${need.length} items</h1><table border=1 cellpadding=8><tr><th>CODE</th><th>NAME</th><th>ON HAND</th><th>STD</th><th>%</th></tr>${need.map((it,i)=>{const c=cache[items.indexOf(it)]; return `<tr><td>${it.code}</td><td>${it.name}</td><td>${c.onHand}</td><td>${it.std}</td><td>${c.pct}%</td></tr>`}).join("")}</table>`); w.print(); }
+function clearCache(){ if(!confirm("Clear cache? Hindi mabubura items, cache lang."))return; localStorage.removeItem('inventory_history'); alert("Cache cleared!"); }
+function openHistory(){ document.getElementById('histList').innerHTML=history.map(h=>`<div style="padding:8px 0;border-bottom:1px solid #eee;font-size:13px"><b>${h.action}</b> - ${h.name} - ${h.qty} ${h.unit} - by ${h.user}<br><small>${h.time}</small></div>`).join("")||"Walang history pa."; document.getElementById('histModal').style.display="block"; }
+function closeHistory(){ document.getElementById('histModal').style.display="none"; }
+function openQR(){ document.getElementById('qrModal').style.display="block"; renderQRList(); }
+function closeQR(){ document.getElementById('qrModal').style.display="none"; }
+function renderQRList(){ const q=(document.getElementById('qrSearch').value||"").toLowerCase(); const list=document.getElementById('qrList'); list.innerHTML=items.filter(it=>it.name.toLowerCase().includes(q)||(it.code||"").toLowerCase().includes(q)).slice(0,100).map(it=>{ const idx=items.indexOf(it); return `<label style="display:flex;gap:8px;padding:6px;border-bottom:1px solid #eee;font-size:13px"><input type="checkbox" ${selectedQR.has(idx)?"checked":""} onchange="toggleQR(${idx},this.checked)"> ${it.code} - ${it.name}</label>`}).join(""); }
+function toggleQR(idx,checked){ if(checked) selectedQR.add(idx); else selectedQR.delete(idx); updatePrintArea(); }
+function selectAllQR(){ items.slice(0,50).forEach((_,i)=>selectedQR.add(i)); renderQRList(); updatePrintArea(); }
+function updatePrintArea(){ const area=document.getElementById('printArea'); area.innerHTML=[...selectedQR].map(idx=>{ const it=items[idx]; return `<div style="border:2px dashed #000;padding:10px;text-align:center;margin:6px 0"><b>${it.name}</b><br><svg id="bc-${idx}"></svg><div>${it.code}</div></div>`}).join(""); [...selectedQR].forEach(idx=>{ try{ JsBarcode("#bc-"+idx, items[idx].code, {format:"CODE128",width:2,height:50,displayValue:false}); }catch(e){} }); }
+function doPrintQR(){ updatePrintArea(); window.print(); }
+function openScan(){ document.getElementById('scanModal').style.display="block"; startScan(); }
+function closeScan(){ if(html5Qr){ html5Qr.stop().catch(()=>{}); html5Qr=null; } scanning=false; document.getElementById('scanModal').style.display="none"; }
+function startScan(){ if(scanning) return; scanning=true; html5Qr=new Html5Qrcode("reader"); html5Qr.start({facingMode:"environment"},{fps:10,qrbox:250},(decoded)=>{ handleScanCode(decoded); },()=>{}).catch(e=>{ document.getElementById('scanResult').innerHTML="Hindi ma-open camera: "+e; }); }
+function restartScan(){ if(html5Qr){ html5Qr.stop().then(()=>{ html5Qr=null; scanning=false; startScan(); }); } else startScan(); }
+function handleScanCode(code){ const idx=items.findIndex(x=>x.code===code.trim()); if(idx>=0){ items[idx].in+=1; addHistory(items[idx].name,"IN (scan)",1,items[idx].unit); playBeep(true); const onHand=items[idx].open+items[idx].in-items[idx].out; const pct=items[idx].std?Math.round(onHand/items[idx].std*100):0; cache[idx]={onHand,pct,status:pct<=0?"LOW OF STOCK":pct<100?"BELOW LEVEL":"ABOVE LEVEL",nameLower:items[idx].name.toLowerCase(),locLower:(items[idx].loc||"").toLowerCase(),codeLower:(items[idx].code||"").toLowerCase()}; document.getElementById('scanResult').innerHTML="✅ Na-scan: "+items[idx].name+" +IN! On Hand: "+onHand; save(true); } else { playBeep(false); document.getElementById('scanResult').innerHTML="❌ Hindi nakita: "+code; } }
+function scanManual(val){ if(!val) return; const idx=items.findIndex(x=>x.code===val.trim()); if(idx>=0 && val.length>=4){ handleScanCode(val.trim()); document.getElementById('scanInput').value=""; } }
+applyFilter(); render();
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -168,48 +159,42 @@ const firebaseConfig = { apiKey: "AIzaSyBlbz1NoENQS1W2FNBt7EK6Mh9eGXShSbs", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const docRef = doc(db, "inventory", "main");
-const params = new URLSearchParams(location.search);
-const isViewer = params.get("mode") === "view";
-let curFilter = "ALL";
-let page = 1;
-const perPage = 50;
-let items = JSON.parse(localStorage.getItem("bodega_items") || localStorage.getItem("inventory") || localStorage.getItem("items") || "[]");
-let history = JSON.parse(localStorage.getItem("bodega_hist") || "[]");
-if(localStorage.getItem("pangalan")) document.getElementById("pangalan").value = localStorage.getItem("pangalan");
-if(items.length===0){ items=[{code:"ITEM-001",name:"ADAPTER",qty:5,loc:"A1",cat:"Electronics",min:10},{code:"ITEM-002",name:"Sample - Nescafe",qty:12,loc:"A2",cat:"Inumin",min:10},{code:"ITEM-003",name:"Sample - Milo",qty:2,loc:"A3",cat:"Inumin",min:10}]; }
-if(isViewer){ document.getElementById("modeBadge").textContent="👁️ VIEWER - SI SIR (Bawal mag-edit)"; document.getElementById("modeBadge").className="badge viewer"; document.getElementById("adminBtns").style.display="none"; document.getElementById("thAction").style.display="none"; document.getElementById("viewerBtns").style.display="block"; } else { document.getElementById("modeBadge").textContent="🔧 ADMIN - IKAW (Pwede mag-edit)"; }
-function saveLocal(){ localStorage.setItem("bodega_items", JSON.stringify(items)); localStorage.setItem("inventory", JSON.stringify(items)); localStorage.setItem("bodega_hist", JSON.stringify(history)); }
-function addHist(code,name,action,qty){ history.unshift({code,name,action,qty,time:Date.now(),by:document.getElementById("pangalan").value||"rommel"}); history=history.slice(0,200); saveLocal(); }
-function beep(){ if(document.getElementById("tunog").value.includes("ON")){ try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const o=ctx.createOscillator(); o.frequency.value=880; o.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+0.15); }catch(e){} } }
-async function uploadToCloud(){ if(isViewer) return; document.getElementById("status").textContent="☁️ Nag-u-upload..."; try{ await setDoc(docRef,{items,history,updatedAt:Date.now(),updatedBy:"admin"}); document.getElementById("status").textContent="✅ Na-upload na! Kita na ni Sir!"; document.getElementById("cloudTxt").textContent="Cloud: ONLINE"; }catch(e){ alert(e.message);} }
-window.uploadToCloud=uploadToCloud;
-onSnapshot(docRef,(snap)=>{ document.getElementById("cloudBadge").textContent="● ONLINE - NAKA-CONNECT SA CLOUD"; document.getElementById("cloudBadge").className="badge admin"; document.getElementById("cloudTxt").textContent="Cloud: ONLINE"; if(snap.exists()){ const d=snap.data(); if(d.items && JSON.stringify(d.items)!==JSON.stringify(items)){ // Huwag patungan kung mas marami yung local at hindi pa na-upload
-if(d.items.length>=items.length || items.length<=3){ items=d.items; if(d.history) history=d.history; saveLocal(); document.getElementById("status").textContent="☁️ Bagong update galing cloud! "+new Date(d.updatedAt).toLocaleString(); } } render(); } else { document.getElementById("status").textContent="Walang laman pa sa cloud. Pindot 'I-UPLOAD SA CLOUD'"; render(); } },()=>{ document.getElementById("cloudBadge").textContent="● OFFLINE"; document.getElementById("cloudBadge").className="badge offline"; render(); });
-window.setFilter=function(el,f){ curFilter=f; document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active")); if(el) el.classList.add("active"); page=1; render(); };
-function getStatus(it){ const q=Number(it.qty||0), m=Number(it.min||10); if(q<=0) return "LOW"; if(q<m) return "BELOW"; if(q>=m) return "ABOVE"; return "ABOVE"; }
-window.render=function(){ const start=performance.now(); const q=document.getElementById("search").value.toLowerCase(); const sort=document.getElementById("fSort").value; let total=items.length; let low=items.filter(i=>Number(i.qty||0)<=0).length; let below=items.filter(i=>{const qq=Number(i.qty||0); return qq>0 && qq<Number(i.min||10)}).length; let lowStock=items.filter(i=>Number(i.qty||0)<Number(i.min||10)).length; let needReorder=items.filter(i=>Number(i.qty||0)<Number(i.min||10)).length; let ok=items.filter(i=>Number(i.qty||0)>=Number(i.min||10)).length; document.getElementById("total").textContent=total; document.getElementById("low").textContent=lowStock; document.getElementById("reorder").textContent=needReorder; document.getElementById("ok").textContent=ok; let filtered=items.filter(i=>(i.code+" "+i.name+" "+(i.loc||"")).toLowerCase().includes(q)); if(curFilter==="LOW") filtered=filtered.filter(i=>Number(i.qty||0)<=0); if(curFilter==="BELOW") filtered=filtered.filter(i=>Number(i.qty||0)<Number(i.min||10) && Number(i.qty||0)>0); if(curFilter==="ABOVE") filtered=filtered.filter(i=>Number(i.qty||0)>=Number(i.min||10)); if(sort==="name") filtered.sort((a,b)=>a.name.localeCompare(b.name)); if(sort==="qty-low") filtered.sort((a,b)=>a.qty-b.qty); if(sort==="qty-high") filtered.sort((a,b)=>b.qty-a.qty); if(sort==="loc") filtered.sort((a,b)=>(a.loc||"").localeCompare(b.loc||"")); const totalPages=Math.max(1,Math.ceil(filtered.length/perPage)); if(page>totalPages) page=totalPages; const startIdx=(page-1)*perPage; const pageItems=filtered.slice(startIdx,startIdx+perPage); document.getElementById("showTxt").textContent=`Showing ${filtered.length?startIdx+1:0}-${Math.min(startIdx+perPage,filtered.length)} of ${filtered.length} (Page ${page}/${totalPages}) ${totalPages>1?` - <button onclick="prevPage()" style="border:0;background:#e2e8f0;padding:4px 10px;border-radius:6px;cursor:pointer">‹ Prev</button> <button onclick="nextPage(${totalPages})" style="border:0;background:#e2e8f0;padding:4px 10px;border-radius:6px;cursor:pointer">Next ›</button>`:""}`; document.getElementById("list").innerHTML=pageItems.map(it=>{ const ri=items.indexOf(it); const st=getStatus(it); const color=st==="LOW"?"#ef4444":st==="BELOW"?"#f97316":"#16a34a"; const label=st==="LOW"?"LOW OF STOCK":st==="BELOW"?"NEED REORDER":"OK"; if(isViewer){ return `<tr class="${Number(it.qty||0)<Number(it.min||10)?"lowRow":""}"><td><b>${it.name}</b><div style="font-size:11px;color:#64748b">${it.code}</div></td><td>${it.loc||"-"}</td><td class="qty">${it.qty}</td><td><span style="background:${color};color:#fff;padding:4px 8px;border-radius:10px;font-size:11px;font-weight:bold">${label}</span></td></tr>`; } return `<tr class="${Number(it.qty||0)<Number(it.min||10)?"lowRow":""}"><td><b>${it.name}</b><div style="font-size:11px;color:#64748b">${it.code}</div></td><td>${it.loc||"-"}</td><td class="qty">${it.qty}</td><td><span style="background:${color};color:#fff;padding:4px 8px;border-radius:10px;font-size:11px;font-weight:bold">${label}</span></td><td><button class="qbtn red" onclick="changeQty(${ri},-1)">- OUT</button> <button class="qbtn green" onclick="changeQty(${ri},1)">+ IN</button> <button class="qbtn" style="background:#e9d5ff" onclick="editItem(${ri})">✏️</button> <button class="qbtn" style="background:#fef9c3" onclick="stickerFor(${ri})">🏷️</button> <button class="qbtn" onclick="delItem(${ri})">🗑️</button></td></tr>`; }).join("")||"<tr><td colspan='5' style='text-align:center;color:#888'>Walang item. Import mo yung 334 mo.</td></tr>"; document.getElementById("ms").textContent="⚡ "+(performance.now()-start).toFixed(1)+"ms"; };
-window.prevPage=function(){ if(page>1){page--;render();} }; window.nextPage=function(t){ if(page<t){page++;render();} };
-window.changeQty=async function(i,d){ items[i].qty=Math.max(0,Number(items[i].qty||0)+d); addHist(items[i].code,items[i].name,d>0?"+IN":"-OUT",items[i].qty); beep(); saveLocal(); render(); await uploadToCloud(); };
-window.delItem=async function(i){ if(!confirm("Delete "+items[i].name+"?"))return; addHist(items[i].code,items[i].name,"DELETE",0); items.splice(i,1); saveLocal(); render(); await uploadToCloud(); };
-window.editItem=function(i){ const it=items[i]; document.getElementById("nCode").value=it.code; document.getElementById("nName").value=it.name; document.getElementById("nQty").value=it.qty; document.getElementById("nLoc").value=it.loc||""; document.getElementById("nCat").value=it.cat||"Iba pa"; document.getElementById("nMin").value=it.min||10; document.getElementById("editIdx").value=i; document.getElementById("addBox").style.display="block"; window.scrollTo({top:0,behavior:"smooth"}); };
-window.toggleAdd=function(){ const b=document.getElementById("addBox"); const show=b.style.display!=="block"; b.style.display=show?"block":"none"; if(!show) document.getElementById("editIdx").value="-1"; };
-window.addItem=async function(){ const code=document.getElementById("nCode").value.trim(); const name=document.getElementById("nName").value.trim(); const qty=Number(document.getElementById("nQty").value||1); const loc=document.getElementById("nLoc").value.trim(); const cat=document.getElementById("nCat").value; const min=Number(document.getElementById("nMin").value||10); if(!code||!name) return alert("Lagyan mo Code at Name"); const ei=Number(document.getElementById("editIdx").value); if(ei>=0){ items[ei]={code,name,qty,loc,cat,min}; addHist(code,name,"EDIT",qty); } else { const ex=items.findIndex(x=>x.code===code); if(ex>=0){ items[ex].qty+=qty; items[ex].name=name; items[ex].loc=loc; items[ex].cat=cat; addHist(code,name,"+IN (add)",items[ex].qty); } else { items.push({code,name,qty,loc,cat,min}); addHist(code,name,"NEW",qty); } } saveLocal(); render(); toggleAdd(); await uploadToCloud(); document.getElementById("nCode").value=""; document.getElementById("nName").value=""; document.getElementById("editIdx").value="-1"; document.getElementById("search").value=code; render(); document.getElementById("search").focus(); };
-window.exportBackup=function(){ const blob=new Blob([JSON.stringify({items,history},null,2)],{type:"application/json"}); const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="BACKUP_INVENTORY_"+Date.now()+".json"; a.click(); };
-window.exportXlsx=function(){ const ws=XLSX.utils.json_to_sheet(items.map(i=>({CODE:i.code,NAME:i.name,QTY:i.qty,LOCATION:i.loc||"",CATEGORY:i.cat||"",REORDER_LEVEL:i.min||10,STATUS:getStatus(i)}))); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Inventory"); XLSX.writeFile(wb,"INVENTORY_"+Date.now()+".xlsx"); };
-window.printReorder=function(){ const need=items.filter(i=>Number(i.qty||0)<Number(i.min||10)); const w=window.open("","_blank"); w.document.write(`<h1>NEED TO REORDER - ${need.length} items</h1><table border=1 cellpadding=8><tr><th>CODE</th><th>NAME</th><th>QTY</th><th>REORDER LEVEL</th><th>LOC</th></tr>${need.map(i=>`<tr><td>${i.code}</td><td>${i.name}</td><td>${i.qty}</td><td>${i.min}</td><td>${i.loc}</td></tr>`).join("")}</table>`); w.print(); };
-window.clearCache=function(){ if(!confirm("Clear cache? Hindi mabubura items, cache lang."))return; localStorage.removeItem("bodega_hist"); alert("Cache cleared!"); };
-window.showHist=function(){ const b=document.getElementById("histBox"); b.style.display=b.style.display==="block"?"none":"block"; document.getElementById("histList").innerHTML=history.map(h=>`<div class="hist-item"><b>${h.action}</b> - ${h.name} (${h.code}) - Qty: ${h.qty} - by ${h.by||""}<br><small>${new Date(h.time).toLocaleString()}</small></div>`).join("")||"Walang history pa."; window.scrollTo({top:0,behavior:"smooth"}); };
-window.clearHist=async function(){ if(!confirm("Burahin history?"))return; history=[]; saveLocal(); document.getElementById("histList").innerHTML=""; await uploadToCloud(); };
-window.openQR=function(){ document.getElementById("qrBox").style.display="block"; window.scrollTo({top:0,behavior:"smooth"}); };
-window.stickerFor=function(i){ const it=items[i]; document.getElementById("sCode").value=it.code; document.getElementById("sName").value=it.name; openQR(); makeSticker(); };
-window.makeSticker=function(){ const code=document.getElementById("sCode").value.trim()||"123"; const name=document.getElementById("sName").value.trim()||"ITEM"; document.getElementById("stickerName").textContent=name; document.getElementById("stickerCode").textContent=code; try{ JsBarcode("#barcode", code, {format:"CODE128", width:2, height:60, displayValue:false}); }catch(e){} };
-window.importFile=function(e){ const f=e.target.files[0]; if(!f)return; if(f.name.endsWith(".xlsx")||f.name.endsWith(".xls")){ const r=new FileReader(); r.onload=async()=>{ const wb=XLSX.read(r.result,{type:"array"}); const ws=wb.Sheets[wb.SheetNames[0]]; const arr=XLSX.utils.sheet_to_json(ws); const mapped=arr.map(row=>({code:String(row.CODE||row.code||row.Code||""),name:String(row.NAME||row.name||row.Name||""),qty:Number(row.QTY||row.qty||row.Qty||0),loc:String(row.LOCATION||row.loc||row.Location||""),cat:String(row.CATEGORY||row.cat||"Iba pa"),min:Number(row.REORDER_LEVEL||row.min||10)})); if(confirm("Nakita "+mapped.length+" items sa Excel. OK = DAGDAG")){ mapped.forEach(n=>{ if(!n.code) return; const ex=items.findIndex(x=>x.code===n.code); if(ex>=0) items[ex].qty=Number(n.qty||0); else items.push(n); }); items=items.filter(x=>!x.code.startsWith("ITEM-00")||items.length<=3); saveLocal(); render(); await uploadToCloud(); alert("Na-import! Total: "+items.length); } }; r.readAsArrayBuffer(f); return; } const r=new FileReader(); r.onload=async()=>{ try{ const j=JSON.parse(r.result); const arr=j.items||j; if(!Array.isArray(arr)) return alert("Hindi valid"); if(confirm("Nakita "+arr.length+" items. OK = DAGDAG")){ arr.forEach(n=>{ const ex=items.findIndex(x=>x.code===n.code); if(ex>=0) items[ex].qty=Number(n.qty||0); else items.push({code:n.code,name:n.name,qty:Number(n.qty||0),loc:n.loc||"",cat:n.cat||"Iba pa",min:n.min||10}); }); items=items.filter(x=>!x.code.startsWith("ITEM-00")||items.length<=3); saveLocal(); render(); await uploadToCloud(); alert("Na-import! Total: "+items.length); } }catch(err){ alert(err.message);} }; r.readAsText(f); };
-let scanner=null;
-window.toggleScan=function(){ const b=document.getElementById("scanBox"); if(b.style.display==="block"){ stopScan(); return; } b.style.display="block"; scanner=new Html5Qrcode("reader"); scanner.start({facingMode:"environment"},{fps:10,qrbox:250},async (decoded)=>{ await handleScan(decoded); },()=>{}).catch(e=>alert("Hindi ma-open camera: "+e)); };
-window.stopScan=function(){ if(scanner){ scanner.stop().then(()=>{ scanner.clear(); document.getElementById("scanBox").style.display="none"; }).catch(()=>{ document.getElementById("scanBox").style.display="none"; }); } else document.getElementById("scanBox").style.display="none"; };
-async function handleScan(code){ code=code.trim(); const idx=items.findIndex(x=>x.code===code); if(idx>=0){ await changeQty(idx,1); alert("Na-scan: "+items[idx].name+" +IN! Qty: "+items[idx].qty); } else { stopScan(); document.getElementById("nCode").value=code; document.getElementById("addBox").style.display="block"; document.getElementById("nName").focus(); alert("Bago to! Lagyan mo ng Name."); } }
-document.getElementById("search").addEventListener("keydown",async(e)=>{ if(e.key==="Enter"&&!isViewer){ const code=e.target.value.trim(); if(!code)return; const idx=items.findIndex(x=>x.code===code); if(idx>=0){ await changeQty(idx,1); e.target.value=""; render(); } else { document.getElementById("nCode").value=code; document.getElementById("addBox").style.display="block"; document.getElementById("nName").focus(); } } });
-render();
+const isViewer = new URLSearchParams(location.search).get("mode") === "view";
+let lastUpload = 0;
+window.uploadToCloud = async function(){
+if(isViewer) return;
+if(Date.now()-lastUpload < 2000) return;
+lastUpload = Date.now();
+try{ await setDoc(docRef, { items: JSON.parse(localStorage.getItem('inventory_data')||'[]'), history: JSON.parse(localStorage.getItem('inventory_history')||'[]'), updatedAt: Date.now(), updatedBy: localStorage.getItem('inventory_user')||"rommel" }); document.getElementById('cloudStatus').textContent = "✅ Na-upload! Kita na ni Sir!"; }catch(e){ document.getElementById('cloudStatus').textContent = e.message; }
+};
+window.__uploadToCloud = window.uploadToCloud;
+if(isViewer){
+document.getElementById('modeBadge').textContent = "👁️ VIEWER - SI SIR";
+document.getElementById('modeBadge').style.background = "#f59e0b";
+document.getElementById('viewerBar').style.display = "block";
+document.getElementById('adminBtns').style.display = "none";
+const st = document.createElement('style'); st.textContent = ".btn-in,.btn-out,.btn-edit,.btn-del{pointer-events:none;opacity:.4}";
+document.head.appendChild(st);
+}
+onSnapshot(docRef, (snap)=>{
+document.getElementById('cloudBadge').textContent = "● ONLINE - NAKA-CONNECT SA CLOUD";
+document.getElementById('cloudBadge').style.background = "#22c55e";
+if(!snap.exists()){ document.getElementById('cloudStatus').textContent = "Walang laman pa sa cloud. Pindot 'I-UPLOAD SA CLOUD'"; return; }
+const d = snap.data();
+if(!d.items) return;
+const local = JSON.parse(localStorage.getItem('inventory_data')||'[]');
+if(JSON.stringify(d.items) !== JSON.stringify(local)){
+if(isViewer || d.items.length >= local.length){
+localStorage.setItem('inventory_data', JSON.stringify(d.items));
+if(d.history) localStorage.setItem('inventory_history', JSON.stringify(d.history));
+document.getElementById('cloudStatus').textContent = "☁️ Bagong update galing cloud! " + new Date(d.updatedAt).toLocaleString();
+location.reload();
+}
+}
+}, ()=>{
+document.getElementById('cloudBadge').textContent = "● OFFLINE";
+document.getElementById('cloudBadge').style.background = "#ef4444";
+});
 </script>
 </body>
 </html>
